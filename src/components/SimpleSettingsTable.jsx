@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import FlexibleDateInput from "./FlexibleDateInput.jsx";
+import { parseSpreadsheet } from "../lib/spreadsheetPaste.js";
+import { normalizeDateInput, normalizeDateTimeInput } from "../lib/flexibleDate.js";
 
 export default function SimpleSettingsTable({
   columns,
@@ -11,11 +14,31 @@ export default function SimpleSettingsTable({
   onSelectRow,
   onPaste,
   hideManagement = false,
+  onInsertRow,
+  addRowLabel = "행 추가",
 }) {
   const [deleteTargetIndex, setDeleteTargetIndex] = useState(null);
   const [openSelectKey, setOpenSelectKey] = useState(null);
   const tableWrapRef = useRef(null);
   const deleteTarget = deleteTargetIndex === null ? null : rows[deleteTargetIndex];
+  const pasteCells = (event, startRow, startCol) => {
+    onPaste?.(event,startRow,startCol);
+    if(event.defaultPrevented)return;
+    const text=event.clipboardData.getData("text/plain");
+    if(!text.includes("\t")&&!text.trim().includes("\n"))return;
+    event.preventDefault();
+    const incoming=parseSpreadsheet(text);
+    const needed=Math.max(0,startRow+incoming.length-rows.length);
+    for(let i=0;i<needed;i++)onAddRow?.();
+    incoming.forEach((row,r)=>{
+      if(startRow+r>=rows.length && !onAddRow)return;
+      row.forEach((value,c)=>{
+        const column=columns[startCol+c];if(!column||column.readOnly)return;
+        const normalized=column.type==="date"?normalizeDateInput(value):column.type==="datetimePicker"?normalizeDateTimeInput(value):value;
+        onChange(startRow+r,column.key,normalized??value);
+      });
+    });
+  };
 
   useEffect(() => {
     const closeSelect = (event) => {
@@ -52,35 +75,26 @@ export default function SimpleSettingsTable({
               {columns.map((column, colIndex) => (
                 <td key={column.key} style={{ width: column.width }}>
                   {column.type === "date" ? (
-                    <input
-                      type="date"
-                      placeholder={column.placeholder}
-                      value={row[column.key] ?? ""}
-                      onChange={(event) =>
-                        onChange(
-                          rowIndex,
-                          column.key,
-                          applyInputMask(event.target.value, column.mask, row[column.key] ?? ""),
-                        )
-                      }
+                    <FlexibleDateInput label={`${rowIndex + 1}행 ${column.label}`} value={row[column.key] ?? ""}
+                      year={column.year} shortDate={column.shortDate}
+                      onChange={value => onChange(rowIndex, column.key, value)}
                       onFocus={() => onSelectRow?.(rowIndex)}
-                      onPaste={(event) => onPaste?.(event, rowIndex, colIndex)}
-                    />
+                      onPaste={event => pasteCells(event, rowIndex, colIndex)} />
                   ) : column.type === "datetimePicker" ? (
-                    <DateTimePickerInput
-                      value={row[column.key] ?? ""}
-                      onChange={(value) => onChange(rowIndex, column.key, value)}
+                    <FlexibleDateInput kind="datetime" label={`${rowIndex + 1} ${column.label}`} value={row[column.key] ?? ""}
+                      onChange={value => onChange(rowIndex, column.key, value)}
                       onFocus={() => onSelectRow?.(rowIndex)}
-                    />
+                      onPaste={event => pasteCells(event, rowIndex, colIndex)} />
                   ) : column.type === "select" ? (
                     <ComboSelect
                       column={column}
                       isOpen={openSelectKey === `${row.id}-${column.key}`}
                       onChange={(value) => onChange(rowIndex, column.key, value)}
                       onOpenChange={(isOpen) => setOpenSelectKey(isOpen ? `${row.id}-${column.key}` : null)}
-                      onPaste={(event) => onPaste?.(event, rowIndex, colIndex)}
+                      onPaste={(event) => pasteCells(event, rowIndex, colIndex)}
                       onSelectRow={() => onSelectRow?.(rowIndex)}
-                      value={row[column.key] ?? ""}
+                      value={row[column.valueKey || column.key] ?? ""}
+                      fallbackLabel={column.displayValue?.(row)}
                     />
                   ) : (
                     <textarea
@@ -98,13 +112,14 @@ export default function SimpleSettingsTable({
                         )
                       }
                       onFocus={() => onSelectRow?.(rowIndex)}
-                      onPaste={(event) => onPaste?.(event, rowIndex, colIndex)}
+                      onPaste={(event) => pasteCells(event, rowIndex, colIndex)}
                     />
                   )}
                 </td>
               ))}
               {!hideManagement && (
                 <td>
+                  {onInsertRow && <button type="button" aria-label={`${rowIndex + 1}행 아래 일정 추가`} onClick={() => onInsertRow(rowIndex)}>+</button>}
                   <button type="button" onClick={() => setDeleteTargetIndex(rowIndex)}>
                     삭제
                   </button>
@@ -116,7 +131,7 @@ export default function SimpleSettingsTable({
       </table>
       {!hideManagement && (
         <button className="settings-add-button" type="button" onClick={onAddRow}>
-          행 추가
+          {addRowLabel}
         </button>
       )}
 
@@ -149,9 +164,9 @@ export default function SimpleSettingsTable({
   );
 }
 
-function ComboSelect({ column, value, isOpen, onChange, onOpenChange, onSelectRow, onPaste }) {
+function ComboSelect({ column, value, isOpen, onChange, onOpenChange, onSelectRow, onPaste, fallbackLabel }) {
   const selectedOption = column.options?.find((option) => option.value === value);
-  const displayValue = selectedOption?.closedLabel || value || "선택";
+  const displayValue = selectedOption?.closedLabel || fallbackLabel || value || "선택";
 
   return (
     <div className="combo-cell">
@@ -198,85 +213,6 @@ function ComboSelect({ column, value, isOpen, onChange, onOpenChange, onSelectRo
       )}
     </div>
   );
-}
-
-function DateTimePickerInput({ value, onChange, onFocus }) {
-  const { date, time } = splitDateTimePickerValue(value);
-  const [isTimeOpen, setIsTimeOpen] = useState(false);
-  const [hour, minute] = time ? time.split(":") : ["", ""];
-
-  const updateTime = (nextHour, nextMinute) => {
-    onChange(formatDateTimePickerValue(date, `${nextHour}:${nextMinute}`));
-    if (nextHour && nextMinute) setIsTimeOpen(false);
-  };
-
-  return (
-    <div className="datetime-picker" onFocus={onFocus}>
-      <input
-        aria-label="날짜"
-        type="date"
-        value={date}
-        onChange={(event) => onChange(formatDateTimePickerValue(event.target.value, time))}
-      />
-      <div className="time-picker-cell">
-        <button
-          aria-label="시간 선택"
-          className={`time-picker-button ${time ? "" : "placeholder"}`}
-          type="button"
-          onClick={() => setIsTimeOpen((current) => !current)}
-        >
-          {time || "HH:mm"}
-        </button>
-        {isTimeOpen && (
-          <div className="time-picker-popover">
-            <div>
-              <strong>시</strong>
-              <div className="time-picker-list">
-                {Array.from({ length: 24 }, (_, index) => String(index).padStart(2, "0")).map((item) => (
-                  <button
-                    className={hour === item ? "active" : ""}
-                    type="button"
-                    key={item}
-                    onClick={() => updateTime(item, minute || "00")}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <strong>분</strong>
-              <div className="time-picker-list">
-                {Array.from({ length: 60 }, (_, index) => String(index).padStart(2, "0")).map((item) => (
-                  <button
-                    className={minute === item ? "active" : ""}
-                    type="button"
-                    key={item}
-                    onClick={() => updateTime(hour || "00", item)}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function splitDateTimePickerValue(value) {
-  const [date = "", time = ""] = String(value ?? "").split(" ");
-  return {
-    date: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "",
-    time: /^\d{2}:\d{2}$/.test(time) ? time : "",
-  };
-}
-
-function formatDateTimePickerValue(date, time) {
-  if (!date && !time) return "";
-  return `${date} ${time}`.trim();
 }
 
 function applyInputMask(value, mask, previousValue) {

@@ -133,6 +133,34 @@ option { background: #263c55; color: #f6faff; }
 .bulk-export-channels label { display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
 .bulk-export-channels input { accent-color: #a8ceff; }
 .bulk-export-channels span { margin-left: auto; color: var(--muted); font-size: 11px; }
+.default-materials-section { min-width: 0; overflow-x: auto; }
+.default-materials-section .settings-table { min-width: 800px; }
+.settings-table .flexible-date-input { min-width: 100px; font-variant-numeric: tabular-nums; }
+.settings-table .flexible-date-input[aria-invalid="true"] { box-shadow: inset 0 -2px 0 #ff9cac; color: #ffc4cd; }
+.settings-table .flexible-date-input::placeholder { color: #bed0e5; font-size: 11px; }
+.default-material-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.default-material-heading :is(h2,h3) { margin: 0; }
+.default-material-heading h3 { font-size: 14px; }
+.default-material-help { margin: 0 0 14px; line-height: 1.6; }
+.default-material-group { padding: 12px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 10px; background: #19334e20; }
+.default-settings-grid { grid-template-columns: minmax(0,1.35fr) minmax(420px,1fr); }
+.card-banner-exclusions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; align-items: start; min-width: 0; }
+.card-banner-exclusions > section { min-width: 0; }
+.card-banner-exclusions .settings-table :is(th,td):last-child { width: 52px; }
+.card-banner-exclusions .settings-table td:last-child button { padding: 0 6px; }
+.card-keyword-help { margin: 0 0 10px; line-height: 1.6; font-size: 12px; }
+.priority-card-row { grid-template-columns: repeat(6,minmax(140px,1fr)); min-width: 920px; }
+.priority-card-fixed { cursor: default; border-color: #ffd1a680; background: linear-gradient(135deg,#d6a97e24,#19334e38); }
+.event-month-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+.event-month-toolbar label { display:flex; align-items:center; gap:8px; font-size:13px; }
+.event-month-toolbar select { padding:8px 12px; background:#243b53; border:1px solid var(--line-dark); border-radius:8px; font:inherit; }
+.event-month-toolbar strong { margin-left:8px; }
+.event-month-help { margin-bottom:16px; line-height:1.7; }
+.event-card-month .settings-table :is(th,td):last-child { width: 108px; }
+.event-card-month .settings-table td:last-child button { width:auto; padding:0 9px; margin:0 3px; }
+.event-card-month .settings-table th:first-child { width:36%; }
+@media(max-width:1100px) { .default-settings-grid { grid-template-columns: minmax(0,1fr); } }
+@media(max-width:600px) { .card-banner-exclusions { grid-template-columns: minmax(0,1fr); } }
 @supports not (backdrop-filter: blur(4px)) { .sidebar, .page { background: #263c55ed; } }
 @media (max-width: 720px) {
   .app-shell { padding: 8px; gap: 8px; }

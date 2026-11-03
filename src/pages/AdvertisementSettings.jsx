@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useRtdbValue from "../hooks/useRtdbValue.js";
+import FlexibleDateInput from "../components/FlexibleDateInput.jsx";
 
 export default function AdvertisementSettings() {
   const [rows, setRows] = useState([]);
@@ -16,7 +17,7 @@ export default function AdvertisementSettings() {
       <table className="settings-table advertisement-table">
         <thead><tr><th>시작시간</th><th>재난방송</th><th>소재</th><th>소재명</th><th>광고시간(초)</th><th>관리</th></tr></thead>
         <tbody>{rows.map(row => <tr key={row.id}>
-          <td><input aria-label="시작시간" type="time" step="1" value={row.startTime} onChange={event => change(row.id, "startTime", event.target.value)} /></td>
+          <td><FlexibleDateInput label="시작시간" kind="time" value={row.startTime} onChange={value => change(row.id, "startTime", value)} /></td>
           <td className="advertisement-checkbox"><input aria-label="재난방송" type="checkbox" checked={row.disaster} onChange={event => change(row.id, "disaster", event.target.checked)} /></td>
           <td><input aria-label="소재" value={row.material} onChange={event => change(row.id, "material", event.target.value)} /></td>
           <td><input aria-label="소재명" value={row.materialName} onChange={event => change(row.id, "materialName", event.target.value)} /></td>

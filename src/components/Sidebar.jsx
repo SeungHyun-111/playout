@@ -8,6 +8,7 @@ const paths = {
   "operation-settings": "M4 7h16 M4 17h16 M8 4v6 M16 14v6",
   "settings-promotion": "M3 10l17-6v16L3 14z M6 15l2 6h4l-2-5",
   "settings-banner": "M3 4h18v16H3z M7 8h.01 M3 17l6-6 4 4 3-3 5 5",
+  "settings-event-card": "M4 4h16v17H4z M8 2v4 M16 2v4 M4 9h16 M8 13h3 M14 13h2 M8 17h3",
   "settings-caption": "M3 5h18v14H3z M6 10h5 M6 14h5 M14 10h4 M14 14h4",
   "settings-special-request": "M12 3l3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 10l6-1z",
   "schedule-write": "M14 4H4v17h17V11 M9 14l1-4 9-9 4 4-9 9z",

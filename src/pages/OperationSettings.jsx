@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import CoachTour from "../components/CoachTour.jsx";
+import EventCardMonth from "../components/EventCardMonth.jsx";
 import SimpleSettingsTable from "../components/SimpleSettingsTable.jsx";
 import useRtdbValue from "../hooks/useRtdbValue.js";
 
@@ -7,10 +8,10 @@ const promotionColumns = [
   { key: "promotionName", label: "프로모션명" },
   { key: "startDate", label: "시작일", type: "date" },
   { key: "endDate", label: "종료일", type: "date" },
-  { key: "material1", label: "카드 배너", type: "select", coachId: "promotion-material-1" },
-  { key: "material2", label: "우상단CI", type: "select", coachId: "promotion-material-2" },
-  { key: "material3", label: "L바", type: "select", coachId: "promotion-material-3" },
-  { key: "material4", label: "특이 배너", coachId: "promotion-material-4" },
+  { key: "material1", label: "카드 배너(배너1)", type: "select", coachId: "promotion-material-1" },
+  { key: "material2", label: "우상단CI(배너2)", type: "select", coachId: "promotion-material-2" },
+  { key: "material3", label: "L바(배너3)", type: "select", coachId: "promotion-material-3" },
+  { key: "material4", label: "특이 배너(배너4)", coachId: "promotion-material-4" },
   { key: "note", label: "비고" },
 ];
 
@@ -18,10 +19,10 @@ const plannedPgmColumns = [
   { key: "plannedPgmName", label: "기획PGM명" },
   { key: "startDate", label: "시작일", type: "date" },
   { key: "endDate", label: "종료일", type: "date" },
-  { key: "material1", label: "카드 배너", type: "select" },
-  { key: "material2", label: "우상단CI", type: "select" },
-  { key: "material3", label: "L바", type: "select" },
-  { key: "material4", label: "특이 배너", type: "select" },
+  { key: "material1", label: "카드 배너(배너1)", type: "select" },
+  { key: "material2", label: "우상단CI(배너2)", type: "select" },
+  { key: "material3", label: "L바(배너3)", type: "select" },
+  { key: "material4", label: "특이 배너(배너4)", type: "select" },
   { key: "note", label: "비고" },
 ];
 
@@ -33,10 +34,10 @@ const specialRequestColumns = [
     width: "230px",
   },
   { key: "programName", label: "편성코드명" },
-  { key: "material1", label: "카드 배너" },
-  { key: "material2", label: "우상단CI" },
-  { key: "material3", label: "L바" },
-  { key: "material4", label: "특이 배너" },
+  { key: "material1", label: "카드 배너(배너1)" },
+  { key: "material2", label: "우상단CI(배너2)" },
+  { key: "material3", label: "L바(배너3)" },
+  { key: "material4", label: "특이 배너(배너4)" },
   { key: "note", label: "비고" },
 ];
 
@@ -56,10 +57,10 @@ const bannerColumns = [
     label: "위치구분",
     type: "select",
     options: [
-      { value: "카드배너", label: "카드배너" },
-      { value: "CI배너", label: "CI배너" },
-      { value: "L바", label: "L바" },
-      { value: "스크롤", label: "스크롤" },
+      { value: "카드배너", label: "카드배너(배너1)" },
+      { value: "CI배너", label: "CI배너(배너2)" },
+      { value: "L바", label: "L바(배너3)" },
+      { value: "스크롤", label: "스크롤(배너4)" },
     ],
   },
 ];
@@ -73,13 +74,16 @@ const bannerScheduleColumns = [
 
 const defaultMaterialColumns = [
   { key: "materialType", label: "구분", readOnly: true },
-  { key: "material1", label: "카드 배너", readOnly: true },
-  { key: "material2", label: "우상단CI", type: "select" },
-  { key: "material3", label: "L바", type: "select" },
-  { key: "material4", label: "특이 배너", type: "select" },
+  { key: "startDate", label: "시작일", type: "date" },
+  { key: "endDate", label: "종료일", type: "date" },
+  { key: "material1", label: "카드 배너(배너1)", readOnly: true },
+  { key: "material2", label: "우상단CI(배너2)", type: "select" },
+  { key: "material3", label: "L바(배너3)", type: "select" },
+  { key: "material4", label: "특이 배너(배너4)", type: "select" },
 ];
 
 const disabledMdColumns = [{ key: "mdCategory", label: "MD분류" }];
+const excludedKeywordColumns = [{ key: "keyword", label: "상품명 포함 키워드" }];
 
 const defaultDisabledMdCategories = [
   "정보방송",
@@ -115,7 +119,7 @@ const priorityItems = [
     id: "eventCard",
     label: "행사카드",
     condition: "일자 일치",
-    path: "settings-banner",
+    path: "settings-event-card",
   },
   {
     id: "captionRequest",
@@ -203,9 +207,13 @@ const sections = {
   },
   "settings-banner": {
     title: "배너관리",
-    description: "PGM 배너 여부와 배너 운영 기준을 관리합니다.",
+    description: "배너소재 전체 리스트를 관리합니다.",
     emptyTitle: "배너관리",
     emptyText: "PGM 배너 표시 여부와 배너 운영값을 관리하는 화면입니다.",
+  },
+  "settings-event-card": {
+    title: "행사카드 일정",
+    description: "기간별로 자동 적용할 행사카드와 배너소재를 관리합니다.",
   },
   "settings-caption": {
     title: "주조자막의뢰정보",
@@ -231,6 +239,7 @@ export default function OperationSettings({ sectionId }) {
   const [specialRequestRows, setSpecialRequestRows] = useState(() => [createSpecialRequestRow()]);
   const [defaultMaterialRows, setDefaultMaterialRows] = useState(() => createDefaultMaterialRows());
   const [disabledMdRows, setDisabledMdRows] = useState(() => createDisabledMdRows());
+  const [excludedKeywordRows, setExcludedKeywordRows] = useState([]);
   const [priorityOrder, setPriorityOrder] = useState(() => priorityItems.map((item) => item.id));
   const [draggingPriorityId, setDraggingPriorityId] = useState(null);
   useRtdbValue("settings/promotion", promotionRows, setPromotionRows);
@@ -241,6 +250,7 @@ export default function OperationSettings({ sectionId }) {
   useRtdbValue("settings/specialRequests", specialRequestRows, setSpecialRequestRows);
   useRtdbValue("settings/defaultMaterials", defaultMaterialRows, setDefaultMaterialRows);
   useRtdbValue("settings/disabledMdCategories", disabledMdRows, setDisabledMdRows);
+  useRtdbValue("settings/cardExcludedKeywords", excludedKeywordRows, setExcludedKeywordRows);
   useRtdbValue("settings/priorityOrder", priorityOrder, setPriorityOrder);
 
   useEffect(() => {
@@ -266,22 +276,22 @@ export default function OperationSettings({ sectionId }) {
     coachSteps.push(
       {
         target: '[data-coach="promotion-material-1"]',
-        title: "카드 배너",
+        title: "카드 배너(배너1)",
         description: "카드배너 소재입니다. 시작시간은 55초 기준으로 확인하세요.",
       },
       {
         target: '[data-coach="promotion-material-2"]',
-        title: "우상단CI",
+        title: "우상단CI(배너2)",
         description: "SKstoa CI배너 소재입니다. 시작시간은 1분 기준으로 확인하세요.",
       },
       {
         target: '[data-coach="promotion-material-3"]',
-        title: "L바",
+        title: "L바(배너3)",
         description: "프로모션바 소재입니다. 시작시간 3분, 캠페인 2분 기준으로 확인하세요.",
       },
       {
         target: '[data-coach="promotion-material-4"]',
-        title: "특이 배너",
+        title: "특이 배너(배너4)",
         description: "플로팅배너 4~5 소재입니다. 스크롤 OR 주조의뢰와 시작시간 요청사항 여부를 확인하세요.",
       },
     );
@@ -490,6 +500,16 @@ export default function OperationSettings({ sectionId }) {
     );
   };
 
+  const addDefaultSetting = () => {
+    setDefaultMaterialRows(current => {
+      const settingNumber = Math.max(0, ...current.map(row => Number(row.settingNumber) || 1)) + 1;
+      const settingId = crypto.randomUUID();
+      return [...current, ...["유형", "무형"].map(type => ({
+        ...createDefaultMaterialRow(type), id: crypto.randomUUID(), settingId, settingNumber,
+      }))];
+    });
+  };
+
   const updateDisabledMdCell = (rowIndex, key, value) => {
     setDisabledMdRows((current) =>
       current.map((row, index) => (index === rowIndex ? { ...row, [key]: value } : row)),
@@ -532,9 +552,14 @@ export default function OperationSettings({ sectionId }) {
         <section className="priority-board" data-coach="operation-settings-panel">
           <header>
             <strong>우선순위</strong>
-            <span>왼쪽일수록 먼저 적용됩니다.</span>
+            <span>카드배너 미적용 처리 후, 나머지는 왼쪽 순서대로 우선 적용합니다.</span>
           </header>
           <div className="priority-card-row">
+            <article className="priority-card priority-card-fixed" data-priority-id="cardExclusion">
+              <span>1</span>
+              <strong>카드배너 미적용 처리</strong>
+              <em>미운영 MD분류 · 상품명 제외 키워드 · PGM배너 제외 여부 확인. 다른 설정과 관계없이 카드배너(배너1)를 제외합니다.</em>
+            </article>
             {priorityCards.map((item, index) => (
               <article
                 className={`priority-card ${draggingPriorityId === item.id ? "dragging" : ""}`}
@@ -556,33 +581,46 @@ export default function OperationSettings({ sectionId }) {
                 }}
                 onDragEnd={() => setDraggingPriorityId(null)}
               >
-                <span>{index + 1}</span>
+                <span>{index + 2}</span>
                 <strong>{item.label}</strong>
                 <em>적용 조건: {item.condition}</em>
               </article>
             ))}
           </div>
           <div className="priority-note">
+            <p>* 1번은 고정입니다. 카드배너 제외 대상에는 프로모션·특수요청이 있어도 배너1을 넣지 않습니다.</p>
             <p>* 특수요청은 전체정보, 외에는 입력소재 부분만 적용됩니다.</p>
             <p>ex. 특수요청 소재1~4 전체 공란일시, 전체 배너 미설정</p>
           </div>
           <section className="default-settings-panel">
             <header>
               <strong>기본셋팅</strong>
-              <span>* 위 설정이 없을시 아래로 설정</span>
+              <span>위 설정이 없을 때 유효기간 내의 기본 소재 적용 · 날짜 공란은 기간 제한 없음</span>
             </header>
             <div className="default-settings-grid">
               <section className="default-materials-section">
-                <h2>기본 소재</h2>
-                <SimpleSettingsTable
+                <div className="default-material-heading"><h2>기본 소재</h2><button type="button" onClick={addDefaultSetting}>셋팅 추가</button></div>
+                <p className="default-material-help">기간별로 미리 등록할 수 있습니다. 기간이 겹치면 시작일이 늦은 셋팅, 시작일도 같으면 나중에 추가한 셋팅을 적용합니다.</p>
+                {[...new Set(defaultMaterialRows.map(row => row.settingId))].map(settingId => {
+                  const group = defaultMaterialRows.filter(row => row.settingId === settingId);
+                  return <div className="default-material-group" key={settingId}>
+                    <div className="default-material-heading"><h3>셋팅{group[0]?.settingNumber || 1}</h3>
+                      {[...new Set(defaultMaterialRows.map(row => row.settingId))].length > 1 && <button type="button" onClick={() => {
+                        if (window.confirm("이 셋팅을 삭제할까요?")) setDefaultMaterialRows(current => current.filter(row => row.settingId !== settingId));
+                      }}>셋팅 삭제</button>}
+                    </div>
+                    <SimpleSettingsTable
                   columns={defaultMaterialColumns.map((column) =>
                     column.type === "select" ? { ...column, options: bannerOptions } : column,
                   )}
-                  rows={defaultMaterialRows}
-                  onChange={updateDefaultMaterialCell}
+                  rows={group}
+                  onChange={(rowIndex, key, value) => updateDefaultMaterialCell(defaultMaterialRows.findIndex(row => row.id === group[rowIndex].id), key, value)}
                   hideManagement
                 />
+                  </div>;
+                })}
               </section>
+              <div className="card-banner-exclusions">
               <section>
                 <h2>카드배너 미운영</h2>
                 <SimpleSettingsTable
@@ -593,6 +631,18 @@ export default function OperationSettings({ sectionId }) {
                   onDeleteRow={deleteDisabledMdRow}
                 />
               </section>
+              <section>
+                <h2>상품명 키워드 제외</h2>
+                <p className="card-keyword-help">상품명에 키워드가 포함되면 다른 설정과 관계없이 카드배너(배너1)를 제외합니다.</p>
+                <SimpleSettingsTable
+                  columns={excludedKeywordColumns}
+                  rows={excludedKeywordRows}
+                  onChange={(rowIndex, key, value) => setExcludedKeywordRows(current => current.map((row,index) => index === rowIndex ? {...row,[key]:value} : row))}
+                  onAddRow={() => setExcludedKeywordRows(current => [...current,{id:crypto.randomUUID(),keyword:""}])}
+                  onDeleteRow={rowIndex => setExcludedKeywordRows(current => current.filter((_,index) => index !== rowIndex))}
+                />
+              </section>
+              </div>
             </div>
           </section>
         </section>
@@ -713,7 +763,7 @@ export default function OperationSettings({ sectionId }) {
       );
     }
 
-    if (sectionId === "settings-banner") {
+    if (sectionId === "settings-banner" || sectionId === "settings-event-card") {
       const bannerNameOptions = bannerRows
         .filter((row) => row.materialName)
         .map((row) => ({
@@ -732,18 +782,8 @@ export default function OperationSettings({ sectionId }) {
 
       return (
         <div className="banner-settings-layout">
-          <section>
-            <h2>행사카드 일정</h2>
-            <SimpleSettingsTable
-              columns={scheduleColumns}
-              rows={bannerScheduleRows}
-              onChange={updateBannerScheduleCell}
-              onAddRow={addBannerScheduleRow}
-              onDeleteRow={deleteBannerScheduleRow}
-              coachId="operation-settings-panel"
-            />
-          </section>
-          <section>
+          {sectionId === "settings-event-card" && <EventCardMonth rows={bannerScheduleRows} setRows={setBannerScheduleRows} materials={bannerRows} />}
+          {sectionId === "settings-banner" && <section>
             <h2>배너소재 전체 리스트</h2>
             <SimpleSettingsTable
               columns={bannerColumns}
@@ -751,9 +791,9 @@ export default function OperationSettings({ sectionId }) {
               onChange={updateBannerCell}
               onAddRow={addBannerRow}
               onDeleteRow={deleteBannerRow}
-              coachId="banner-material-list"
+              coachId="operation-settings-panel"
             />
-          </section>
+          </section>}
         </div>
       );
     }
@@ -832,7 +872,11 @@ function createDefaultMaterialRow(materialType) {
   return {
     id: `default-materials-${materialType}`,
     materialType,
-    material1: materialType === "유형" ? "행사카드" : "미운영",
+    settingId: "setting-1",
+    settingNumber: 1,
+    startDate: "",
+    endDate: "",
+    material1: materialType === "유형" ? "자동적용" : "미운영",
     material2: "",
     material3: "",
     material4: "",
@@ -841,20 +885,18 @@ function createDefaultMaterialRow(materialType) {
 
 function normalizeDefaultMaterialRows(rows) {
   const currentRows = Array.isArray(rows) ? rows : [];
-  const legacyRow = currentRows[0] ?? {};
-  const typedRows = ["유형", "무형"].map((materialType) => {
-    const matchedRow = currentRows.find((row) => row.materialType === materialType);
+  return currentRows.map((row, index) => {
+    const materialType = row.materialType || "유형";
     return {
       ...createDefaultMaterialRow(materialType),
-      ...(materialType === "유형" ? legacyRow : {}),
-      ...matchedRow,
-      id: `default-materials-${materialType}`,
+      ...row,
+      id: row.id || `default-materials-${index}`,
+      settingId: row.settingId || "setting-1",
+      settingNumber: row.settingNumber || 1,
       materialType,
-      material1: materialType === "유형" ? "행사카드" : "미운영",
+      material1: materialType === "유형" ? "자동적용" : "미운영",
     };
   });
-
-  return typedRows;
 }
 
 function createDisabledMdRows() {

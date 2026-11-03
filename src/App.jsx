@@ -40,6 +40,10 @@ const navItems = [
         label: "프로모션",
       },
       {
+        id: "settings-event-card",
+        label: "행사카드 일정",
+      },
+      {
         id: "settings-banner",
         label: "배너관리",
       },

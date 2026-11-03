@@ -52,3 +52,43 @@ test("blank sources stay blank, empty ad rows are skipped, overnight durations w
   const overnight=[...row];overnight[1]="23:31 ~ 00:31";
   assert.equal(buildMaster(buildBulk(headers,[overnight]))[0][3],"60");
 });
+test("default material validity includes boundary dates, supports open ends and preserves legacy undated settings",()=>{
+  const run=defaults=>buildBulk(headers,[row],{defaultMaterials:[{materialType:"유형",material2:"CI",...defaults} ]})[0].values[21];
+  assert.equal(run({startDate:"2026-11-03",endDate:"2026-11-03"}),"CI");
+  assert.equal(run({startDate:"2026-11-04"}),"");
+  assert.equal(run({endDate:"2026-11-02"}),"");
+  assert.equal(run({startDate:"2026-11-01",endDate:""}),"CI");
+  assert.equal(run({startDate:"",endDate:"2026-11-03"}),"CI");
+  assert.equal(run({}),"CI");
+  assert.equal(run({startDate:"2026-11-05",endDate:"2026-11-01"}),"");
+  assert.equal(run({startDate:"invalid"}),"");
+});
+test("multiple reserved default settings switch by broadcast date, with deterministic overlap handling",()=>{
+  const defaults=[
+    {materialType:"유형",material2:"BASE"},
+    {materialType:"유형",startDate:"2026-11-01",endDate:"2026-11-03",material2:"SETTING1"},
+    {materialType:"유형",startDate:"2026-11-04",endDate:"2026-11-30",material2:"SETTING2"},
+  ];
+  const run=(date,config=defaults)=>{const source=[...row];source[0]=date;return buildBulk(headers,[source],{defaultMaterials:config})[0].values[21];};
+  assert.equal(run("2026-11-03"),"SETTING1");assert.equal(run("2026-11-04"),"SETTING2");
+  assert.equal(run("2026-12-01"),"BASE");
+  assert.equal(run("2026-11-04",[...defaults,{...defaults[2],material2:"LATER"}]),"LATER");
+  assert.equal(run("2026-12-01",defaults.slice(1)),"");
+});
+test("product keyword exclusions beat promotions, special requests and manual banner edits",()=>{
+  const source=[...row,"[스케쳐스] 플렉스 부츠"];
+  const config={...settings,cardExcludedKeywords:[{keyword:"스케쳐스"},{keyword:""}],specialRequests:[{pgmDateTime:"2026-11-03 01:31",programName:"상품A",material1:"SPECIAL-CARD",material2:"SPECIAL-CI"}]};
+  const h=[...headers,"상품명"];
+  const id=buildBulk(h,[source],config)[0].id;
+  const result=buildBulk(h,[source],config,{overrides:{[id]:{20:"MANUAL-CARD",11:""}}})[0];
+  assert.equal(result.values[11],"O");assert.equal(result.values[20],"");assert.equal(result.values[21],"SPECIAL-CI");
+  assert.equal(buildMaster([result])[0][15],"");
+  assert.equal(buildBulk(h,[[...row,"다른 상품"]],config)[0].values[20],"SPECIAL-CARD");
+  const mixed={...settings,cardExcludedKeywords:[{keyword:"skeCHers"}]};
+  assert.equal(buildBulk(h,[[...row,"SKECHERS shoes"]],mixed)[0].values[20],"");
+});
+test("MD card exclusion remains above promotion and special-request priority",()=>{
+  const config={...settings,disabledMdCategories:[{mdCategory:"뷰티"}],specialRequests:[{pgmDateTime:"2026-11-03 01:31",programName:"상품A",material1:"CARD",material2:"CI"}]};
+  const record=buildBulk(headers,[row],config)[0];
+  assert.equal(record.values[11],"O");assert.equal(record.values[20],"");assert.equal(record.values[21],"CI");
+});

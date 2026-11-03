@@ -31,11 +31,19 @@ export function buildBulk(headers, rows, settings = {}, edits = {}) {
     out[16]=get("메모코드") || get("메모1");
     const excluded = list(settings.disabledMdCategories).some(row=>text(row.mdCategory) && text(row.mdCategory)===md);
     const cardExcluded = ["N","X","미운영","제외","아니오"].includes(get("PGM배너여부"));
-    out[11] = cardExcluded ? "O" : "";
+    const productName = (get("상품명") || name).normalize("NFKC").toLocaleLowerCase("ko");
+    const keywordExcluded = list(settings.cardExcludedKeywords).some(row => {
+      const keyword=text(row.keyword).normalize("NFKC").toLocaleLowerCase("ko");
+      return keyword && productName.includes(keyword);
+    });
+    out[11] = excluded || cardExcluded || keywordExcluded ? "O" : "";
     const card = list(settings.bannerSchedules).find(row=>range(row,date));
-    const defaults = list(settings.defaultMaterials).find(row=>text(row.materialType)===(excluded?"무형":"유형"));
+    const defaults = list(settings.defaultMaterials).map((row,index)=>({...row,sourceIndex:index})).filter(row=>text(row.materialType)===(excluded?"무형":"유형") && date &&
+      (!text(row.startDate) || (dateKey(row.startDate) && date >= dateKey(row.startDate))) &&
+      (!text(row.endDate) || (dateKey(row.endDate) && date <= dateKey(row.endDate))))
+      .sort((a,b)=>dateKey(b.startDate).localeCompare(dateKey(a.startDate)) || b.sourceIndex-a.sourceIndex)[0];
     let materials = [1,2,3,4].map(i=>text(defaults?.[`material${i}`]));
-    materials[0] = excluded ? "" : card?.materialId || "";
+    materials[0] = defaults && !excluded ? card?.materialId || "" : "";
     const promotion = list(settings.promotion).find(row=>range(row,date) && list(row.programNames).some(p=>text(p.value) && [name,code].includes(text(p.value))));
     const planned = list(settings.plannedPgm).find(row=>text(row.plannedPgmName) && text(row.plannedPgmName)===pgm && range(row,date));
     const stamp = date && start ? `${date} ${start}` : "";
@@ -51,11 +59,13 @@ export function buildBulk(headers, rows, settings = {}, edits = {}) {
       materials=materials.map((v,i)=> key==="specialRequest" ? text(rule[`material${i+1}`]) : text(rule[`material${i+1}`]) || v);
     });
     if(cardExcluded) materials[0]="";
-    materials=materials.map(v=>["미운영","행사카드"].includes(v)?"":v);
+    materials=materials.map(v=>["미운영","행사카드","자동적용"].includes(v)?"":v);
     materials.forEach((v,i)=>out[20+i]=v);
     out[14]=promotion?"O":"";
     out[24]=text(special?.note || promotion?.note || planned?.note);
     Object.entries(edits.overrides?.[id] || {}).forEach(([col,value])=>{out[Number(col)]=value;});
+    // Product exclusions are absolute and must survive every material rule.
+    if(excluded || cardExcluded || keywordExcluded) {out[11]="O";out[20]="";}
     return {id,values:out,meta:{code,videoName:get("영상명"),category:get("카테고리명"),programCode:get("프로그램코드"),duration:get("노출")}};
   }).concat(list(edits.extraRows).map(row=>({...row,values:BULK_HEADERS.map((_,i)=>row.values?.[i] ?? ""),meta:{}})));
 }
