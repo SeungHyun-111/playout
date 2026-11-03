@@ -1,4 +1,5 @@
 import { useState } from "react";
+import CoachTour from "./components/CoachTour.jsx";
 import useTimeBlockPersistence from "./hooks/useTimeBlockPersistence.js";
 import DawonScheduleOutput from "./pages/DawonScheduleOutput.jsx";
 import EpgOutput from "./pages/EpgOutput.jsx";
@@ -137,6 +138,11 @@ export default function App() {
 
       <section className="page">
         {renderPage()}
+        {["schedule-write", "work-memo"].includes(activePage) && <CoachTour key={activePage} steps={[{
+          target: ".page .output-page",
+          title: activePage === "work-memo" ? "작업 메모" : "운행표 작성",
+          description: activePage === "work-memo" ? "앞으로 작업할 내용과 우선순위를 확인하는 화면이에요." : "운행표 작성을 위한 화면이에요. TimeBlock 입력과 운영설정을 먼저 준비해주세요.",
+        }]} />}
       </section>
     </main>
   );

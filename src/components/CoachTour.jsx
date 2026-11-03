@@ -1,10 +1,23 @@
 import { useEffect, useState } from "react";
+import ChiikawaHelper from "./ChiikawaHelper.jsx";
 
 export default function CoachTour({ steps }) {
   const [isOpen, setIsOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [rect, setRect] = useState(null);
   const step = steps[stepIndex];
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onKeyDown = event => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        setStepIndex(0);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !step) return undefined;
@@ -63,9 +76,7 @@ export default function CoachTour({ steps }) {
 
   return (
     <>
-      <button className="help-button" type="button" onClick={() => setIsOpen(true)}>
-        도움말
-      </button>
+      <ChiikawaHelper paused={isOpen} onClick={() => { setStepIndex(0); setIsOpen(true); }} />
 
       {isOpen && (
         <div className="tour-layer" role="dialog" aria-modal="true" aria-label="기능 도움말">
@@ -85,7 +96,7 @@ export default function CoachTour({ steps }) {
             className="tour-card"
             style={{
               top: cardTop,
-              left: rect ? Math.min(window.innerWidth - 330, Math.max(18, rect.left)) : 260,
+              left: rect ? Math.max(12, Math.min(window.innerWidth - 330, Math.max(18, rect.left))) : Math.max(12, Math.min(260, window.innerWidth - 330)),
             }}
           >
             <div className="tour-count">

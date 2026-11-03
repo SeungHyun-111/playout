@@ -1270,3 +1270,21 @@ button:hover {
 
 .output-mail-toolbar { gap: 10px; align-items: center; flex-wrap: wrap; }
 .output-mail-status { flex: 1; min-width: 200px; font-size: 13px; line-height: 1.5; }
+.chiikawa-help { position: fixed; right: 24px; bottom: 18px; z-index: 95; display: flex; flex-direction: column; align-items: center; gap: 0; padding: 0; border: 0; border-radius: 18px; background: transparent; box-shadow: none; cursor: pointer; }
+.chiikawa-help:hover { background: transparent; }
+.chiikawa-help:focus-visible { outline: 3px solid #00a2df; outline-offset: 5px; }
+.chiikawa-help-bubble { padding: 7px 12px; border: 1px solid #e6d8ce; border-radius: 16px 16px 4px 16px; background: #fffaf5; color: #66534c; font-size: 12px; box-shadow: 0 3px 12px #0000000d; }
+.chiikawa-sprite { display: block; width: 96px; height: 104px; background-image: url('/pets/chiikawa.png'); background-repeat: no-repeat; background-size: 768px 1144px; animation: chiikawa-idle 1.2s steps(6) infinite; filter: drop-shadow(0 4px 3px #0002); }
+.chiikawa-help:hover .chiikawa-sprite { background-position-y: -312px; animation: chiikawa-wave .8s steps(4) infinite; }
+@keyframes chiikawa-idle { from { background-position-x: 0; } to { background-position-x: -576px; } }
+@keyframes chiikawa-wave { from { background-position-x: 0; } to { background-position-x: -384px; } }
+@media (prefers-reduced-motion: reduce) { .chiikawa-sprite, .chiikawa-help:hover .chiikawa-sprite { animation: none; } }
+@media (max-width: 720px) { .chiikawa-help { right: 12px; bottom: 12px; } .tour-card { max-width: calc(100vw - 24px); } }
+.chiikawa-wanderer { position: fixed; top: 0; left: 0; right: auto; bottom: auto; z-index: 95; width: 112px; height: 140px; min-height: 140px; padding: 0; border: 0; background: transparent; box-shadow: none; display: block; cursor: pointer; touch-action: manipulation; will-change: transform; }
+.chiikawa-wanderer:hover { background: transparent; }
+.chiikawa-wanderer canvas { display: block; width: 112px; height: 121px; max-width: none; filter: drop-shadow(0 3px 3px #0002); }
+.chiikawa-wanderer-hint { display: block; width: fit-content; margin: 0 auto; padding: 2px 10px; border: 1px solid #eaded7; border-radius: 12px; color: #66534c; background: #fffaf5; font-size: 11px; line-height: 16px; }
+.chiikawa-wanderer:focus-visible { outline: 3px solid #00a2df; border-radius: 14px; }
+
+.chiikawa-wanderer { height: 121px; min-height: 121px; cursor: grab; touch-action: none; user-select: none; }
+.chiikawa-wanderer:active { cursor: grabbing; }
