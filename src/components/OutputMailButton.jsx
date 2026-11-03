@@ -45,7 +45,30 @@ export function buildOutputMailBody(element) {
     node.style.border = "1px solid #000";
   });
   clone.querySelectorAll("th").forEach(node => { node.style.background = "#cfe0ef"; });
-  return { html: `<html><head><meta charset="utf-8"></head><body>${clone.outerHTML}</body></html>`, text: element.innerText };
+  return { html: `<html><head><meta charset="utf-8"><meta name="color-scheme" content="light"></head><body style="color:#000000;background-color:#ffffff;">${clone.outerHTML}</body></html>`, text: element.innerText };
+}
+
+export async function copyOutputMailBody(element) {
+  const {html,text}=buildOutputMailBody(element);
+  if(navigator.clipboard?.write && typeof ClipboardItem!=="undefined") {
+    try {
+      await navigator.clipboard.write([new ClipboardItem({
+        "text/html":new Blob([html],{type:"text/html"}),
+        "text/plain":new Blob([text],{type:"text/plain"}),
+      })]);
+      return;
+    } catch { /* Older browsers / restricted clipboard APIs use the copy event. */ }
+  }
+  let copied=false;
+  const onCopy=event=>{
+    if(!event.clipboardData)return;
+    event.clipboardData.setData("text/html",html);
+    event.clipboardData.setData("text/plain",text);
+    event.preventDefault();copied=true;
+  };
+  document.addEventListener("copy",onCopy);
+  try {document.execCommand("copy");} finally {document.removeEventListener("copy",onCopy);}
+  if(!copied)throw new Error("본문 복사에 실패했습니다. 브라우저의 클립보드 권한을 확인해주세요.");
 }
 
 export default function OutputMailButton({ outputRef, validate, hasRows, kind, date }) {
@@ -61,14 +84,7 @@ export default function OutputMailButton({ outputRef, validate, hasRows, kind, d
     setBusy(true);
     setStatus("");
     try {
-      if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
-        throw new Error("표 서식 복사를 지원하는 Chrome 또는 Edge에서 열어주세요.");
-      }
-      const { html, text } = buildOutputMailBody(outputRef.current);
-      await navigator.clipboard.write([new ClipboardItem({
-        "text/html": new Blob([html], { type: "text/html" }),
-        "text/plain": new Blob([text], { type: "text/plain" }),
-      })]);
+      await copyOutputMailBody(outputRef.current);
       setStatus("본문을 복사했습니다. Outlook 작성창에서 Ctrl+V로 붙여넣어주세요. 창이 열리지 않으면 브라우저의 앱 열기 확인창을 확인해주세요.");
       if (openMail) window.location.assign(buildOutputMailto(kind, date));
     } catch (error) {
@@ -81,6 +97,7 @@ export default function OutputMailButton({ outputRef, validate, hasRows, kind, d
   return <>
     {status && <span role="status" className="output-mail-status">{status}</span>}
     {status && <button type="button" disabled={busy} onClick={() => prepare(false)}>본문 다시 복사</button>}
+    {!status && <button type="button" disabled={busy} onClick={() => prepare(false)}>메일 본문 복사</button>}
     <button type="button" disabled={busy} onClick={() => prepare(true)}>{busy ? "본문 복사 중…" : "메일 전송"}</button>
   </>;
 }

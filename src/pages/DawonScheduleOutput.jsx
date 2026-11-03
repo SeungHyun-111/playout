@@ -2,7 +2,7 @@ import { useRef } from "react";
 import DateSelection from "../components/DateSelection.jsx";
 import useDateSelection from "../hooks/useDateSelection.js";
 import { mailDateRange } from "../lib/mailDateRange.js";
-import OutputMailButton from "../components/OutputMailButton.jsx";
+import OutputMailButton, { copyOutputMailBody } from "../components/OutputMailButton.jsx";
 import CoachTour from "../components/CoachTour.jsx";
 
 const outputHeaders = [
@@ -26,7 +26,7 @@ const coachSteps = [
   },
   {
     target: '[data-coach="dawon-copy"]',
-    title: "화면 그대로 복사",
+    title: "메일용 복사",
     description: "결과 표를 화면에서 스크랩한 것처럼 복사해서 Outlook 표 양식을 유지합니다.",
   },
   {
@@ -147,24 +147,12 @@ export default function DawonScheduleOutput({ headers, rows }) {
     return true;
   };
 
-  const copyResult = () => {
+  const copyResult = async () => {
     if (!showIssues()) return;
-
-    const selection = window.getSelection();
-    const range = document.createRange();
-    range.selectNodeContents(outputRef.current);
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    const copied = document.execCommand("copy");
-    selection.removeAllRanges();
-
-    if (!copied) {
-      alert("복사에 실패했습니다. 결과 영역을 직접 드래그해서 복사해주세요.");
-      return;
-    }
-
-    alert("다원방송 송출 일정을 클립보드에 복사했습니다.");
+    try {
+      await copyOutputMailBody(outputRef.current);
+      alert("\uBA54\uC77C \uBCF8\uBB38\uC744 \uD770 \uBC30\uACBD\u00B7\uAC80\uC740 \uAE00\uC528\uB85C \uBCF5\uC0AC\uD588\uC2B5\uB2C8\uB2E4.");
+    } catch (error) { alert(error.message); }
   };
 
   return (
@@ -180,7 +168,7 @@ export default function DawonScheduleOutput({ headers, rows }) {
             검증
           </button>
           <button data-coach="dawon-copy" type="button" onClick={copyResult}>
-            화면 그대로 복사
+            메일용 복사
           </button>
         </div>
       </header>
