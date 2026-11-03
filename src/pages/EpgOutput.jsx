@@ -1,4 +1,6 @@
 import { useRef } from "react";
+import DateSelection from "../components/DateSelection.jsx";
+import useDateSelection from "../hooks/useDateSelection.js";
 import { mailDateRange } from "../lib/mailDateRange.js";
 import OutputMailButton from "../components/OutputMailButton.jsx";
 import CoachTour from "../components/CoachTour.jsx";
@@ -159,7 +161,9 @@ function OutputTable({ title, rows, coachId }) {
 
 export default function EpgOutput({ headers, rows }) {
   const outputRef = useRef(null);
-  const result = buildEpg(headers, rows);
+  const dateIndex = findIndex(headers, "방송일자");
+  const selection = useDateSelection(rows.filter(isFilledRow).map(row=>row[dateIndex]), "epg");
+  const result = buildEpg(headers, rows.filter(row=>selection.includes(row[dateIndex])));
   const mailDate = mailDateRange([...result.channel1, ...result.channel2].map(row => row.rawDate));
 
   const showIssues = () => {
@@ -222,6 +226,7 @@ export default function EpgOutput({ headers, rows }) {
         </div>
       </header>
 
+      <DateSelection {...selection} />
       <div className="output-mail-toolbar">
           <OutputMailButton outputRef={outputRef} validate={showIssues} hasRows={result.channel1.length + result.channel2.length} kind="epg" date={mailDate} />
       </div>

@@ -7,10 +7,10 @@ const promotionColumns = [
   { key: "promotionName", label: "프로모션명" },
   { key: "startDate", label: "시작일", type: "date" },
   { key: "endDate", label: "종료일", type: "date" },
-  { key: "material1", label: "소재1", type: "select", coachId: "promotion-material-1" },
-  { key: "material2", label: "소재2", type: "select", coachId: "promotion-material-2" },
-  { key: "material3", label: "소재3", type: "select", coachId: "promotion-material-3" },
-  { key: "material4", label: "소재4", coachId: "promotion-material-4" },
+  { key: "material1", label: "카드 배너", type: "select", coachId: "promotion-material-1" },
+  { key: "material2", label: "우상단CI", type: "select", coachId: "promotion-material-2" },
+  { key: "material3", label: "L바", type: "select", coachId: "promotion-material-3" },
+  { key: "material4", label: "특이 배너", coachId: "promotion-material-4" },
   { key: "note", label: "비고" },
 ];
 
@@ -18,10 +18,10 @@ const plannedPgmColumns = [
   { key: "plannedPgmName", label: "기획PGM명" },
   { key: "startDate", label: "시작일", type: "date" },
   { key: "endDate", label: "종료일", type: "date" },
-  { key: "material1", label: "소재1", type: "select" },
-  { key: "material2", label: "소재2", type: "select" },
-  { key: "material3", label: "소재3", type: "select" },
-  { key: "material4", label: "소재4", type: "select" },
+  { key: "material1", label: "카드 배너", type: "select" },
+  { key: "material2", label: "우상단CI", type: "select" },
+  { key: "material3", label: "L바", type: "select" },
+  { key: "material4", label: "특이 배너", type: "select" },
   { key: "note", label: "비고" },
 ];
 
@@ -33,10 +33,10 @@ const specialRequestColumns = [
     width: "230px",
   },
   { key: "programName", label: "편성코드명" },
-  { key: "material1", label: "소재1" },
-  { key: "material2", label: "소재2" },
-  { key: "material3", label: "소재3" },
-  { key: "material4", label: "소재4" },
+  { key: "material1", label: "카드 배너" },
+  { key: "material2", label: "우상단CI" },
+  { key: "material3", label: "L바" },
+  { key: "material4", label: "특이 배너" },
   { key: "note", label: "비고" },
 ];
 
@@ -73,10 +73,10 @@ const bannerScheduleColumns = [
 
 const defaultMaterialColumns = [
   { key: "materialType", label: "구분", readOnly: true },
-  { key: "material1", label: "소재1", readOnly: true },
-  { key: "material2", label: "소재2", type: "select" },
-  { key: "material3", label: "소재3", type: "select" },
-  { key: "material4", label: "소재4", type: "select" },
+  { key: "material1", label: "카드 배너", readOnly: true },
+  { key: "material2", label: "우상단CI", type: "select" },
+  { key: "material3", label: "L바", type: "select" },
+  { key: "material4", label: "특이 배너", type: "select" },
 ];
 
 const disabledMdColumns = [{ key: "mdCategory", label: "MD분류" }];
@@ -266,22 +266,22 @@ export default function OperationSettings({ sectionId }) {
     coachSteps.push(
       {
         target: '[data-coach="promotion-material-1"]',
-        title: "소재1: 카드배너",
+        title: "카드 배너",
         description: "카드배너 소재입니다. 시작시간은 55초 기준으로 확인하세요.",
       },
       {
         target: '[data-coach="promotion-material-2"]',
-        title: "소재2: SKstoa CI배너",
+        title: "우상단CI",
         description: "SKstoa CI배너 소재입니다. 시작시간은 1분 기준으로 확인하세요.",
       },
       {
         target: '[data-coach="promotion-material-3"]',
-        title: "소재3: 프로모션바",
+        title: "L바",
         description: "프로모션바 소재입니다. 시작시간 3분, 캠페인 2분 기준으로 확인하세요.",
       },
       {
         target: '[data-coach="promotion-material-4"]',
-        title: "소재4: 플로팅배너 4~5",
+        title: "특이 배너",
         description: "플로팅배너 4~5 소재입니다. 스크롤 OR 주조의뢰와 시작시간 요청사항 여부를 확인하세요.",
       },
     );

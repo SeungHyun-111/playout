@@ -1,4 +1,6 @@
 import { useRef } from "react";
+import DateSelection from "../components/DateSelection.jsx";
+import useDateSelection from "../hooks/useDateSelection.js";
 import { mailDateRange } from "../lib/mailDateRange.js";
 import OutputMailButton from "../components/OutputMailButton.jsx";
 import CoachTour from "../components/CoachTour.jsx";
@@ -131,7 +133,9 @@ function getTimeRowSpan(records, index) {
 
 export default function DawonScheduleOutput({ headers, rows }) {
   const outputRef = useRef(null);
-  const result = buildDawon(headers, rows);
+  const dateIndex = findIndex(headers, "방송일자");
+  const selection = useDateSelection(rows.filter(isFilledRow).map(row=>row[dateIndex]), "dawon");
+  const result = buildDawon(headers, rows.filter(row=>selection.includes(row[dateIndex])));
   const mailDate = mailDateRange(result.records.map(row => row.date));
 
   const showIssues = () => {
@@ -181,6 +185,7 @@ export default function DawonScheduleOutput({ headers, rows }) {
         </div>
       </header>
 
+      <DateSelection {...selection} />
       <div className="output-mail-toolbar">
           <OutputMailButton outputRef={outputRef} validate={showIssues} hasRows={result.records.length} kind="dawon" date={mailDate} />
       </div>

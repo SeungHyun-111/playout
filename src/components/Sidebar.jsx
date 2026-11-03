@@ -11,6 +11,9 @@ const paths = {
   "settings-caption": "M3 5h18v14H3z M6 10h5 M6 14h5 M14 10h4 M14 14h4",
   "settings-special-request": "M12 3l3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 10l6-1z",
   "schedule-write": "M14 4H4v17h17V11 M9 14l1-4 9-9 4 4-9 9z",
+  "schedule-bulk": "M14 4H4v17h17V11 M9 14l1-4 9-9 4 4-9 9z",
+  "schedule-master": "M3 4h18v14H3z M8 22h8 M12 18v4 M7 9h10 M7 13h6",
+  "schedule-ads": "M3 10l17-6v16L3 14z M6 15l2 6h4l-2-5",
   "work-memo": "M5 3h14v18H5z M9 8h6 M9 12h6 M9 16h4",
 };
 function Icon({ id }) {
@@ -62,7 +65,7 @@ export default function Sidebar({ items, activePage, onNavigate }) {
       {indicator && <span className="morph-active-indicator" aria-hidden="true" style={{ height: indicator.height, transform: `translateY(${indicator.top}px)` }} />}
       {items.map((item, index) => <div className="morph-nav-group" key={item.id}>
         <div className="morph-section"><span className="morph-label">{item.number} {index === 0 ? "편성 입력 · 출력" : item.label}</span><span className="morph-section-line" /></div>
-        {renderItem(item, index * 3)}
+        {item.id !== "schedule-write" && renderItem(item, index * 3)}
         {item.children?.map((child, childIndex) => renderItem(child, index * 3 + childIndex + 1, true))}
       </div>)}
     </nav>

@@ -1,11 +1,16 @@
 import { useState } from "react";
+import useScheduleSettings from "./hooks/useScheduleSettings.js";
+import useRtdbValue from "./hooks/useRtdbValue.js";
+import { buildBulk, buildMaster } from "./lib/scheduleFlow.js";
 import Sidebar from "./components/Sidebar.jsx";
+import MasterSchedule from "./pages/MasterSchedule.jsx";
+import AdvertisementSettings from "./pages/AdvertisementSettings.jsx";
+import BulkRegistration from "./pages/BulkRegistration.jsx";
 import CoachTour from "./components/CoachTour.jsx";
 import useTimeBlockPersistence from "./hooks/useTimeBlockPersistence.js";
 import DawonScheduleOutput from "./pages/DawonScheduleOutput.jsx";
 import EpgOutput from "./pages/EpgOutput.jsx";
 import OperationSettings from "./pages/OperationSettings.jsx";
-import ScheduleWrite from "./pages/ScheduleWrite.jsx";
 import TimeBlockInput, { createInitialTimeBlockGrid, timeBlockHeaders } from "./pages/TimeBlockInput.jsx";
 import WorkMemo from "./pages/WorkMemo.jsx";
 
@@ -51,7 +56,12 @@ const navItems = [
   {
     id: "schedule-write",
     number: "3.",
-    label: "운행표 작성",
+    label: "운행표 생성",
+    children: [
+      { id: "schedule-bulk", label: "내부 일괄등록" },
+      { id: "schedule-ads", label: "광고 설정" },
+      { id: "schedule-master", label: "주조 운행표" },
+    ],
   },
   {
     id: "work-memo",
@@ -64,6 +74,29 @@ export default function App() {
   const [activePage, setActivePage] = useState("timeblock-input");
   const [timeBlockHeaderValues, setTimeBlockHeaderValues] = useState(timeBlockHeaders);
   const [timeBlockGrid, setTimeBlockGrid] = useState(() => createInitialTimeBlockGrid());
+  const { settings, error: settingsError } = useScheduleSettings();
+  const [bulkEdits, setBulkEdits] = useState({overrides:{},extraRows:[]});
+  useRtdbValue("bulkRegistration/edits",bulkEdits,setBulkEdits);
+  const bulkRecords=buildBulk(timeBlockHeaderValues,timeBlockGrid,settings,bulkEdits);
+  const masterRows=buildMaster(bulkRecords,settings);
+  const updateBulkRows = update => {
+    const previous=bulkRecords.map(record=>record.values);
+    const next=typeof update === "function" ? update(previous) : update;
+    setBulkEdits(current=>{
+      const overrides={...(current.overrides||{})};
+      const extraRows=[];
+      next.forEach((row,index)=>{
+        const record=bulkRecords[index];
+        if(!record || record.id.startsWith("manual-")) {
+          extraRows.push({id:record?.id || `manual-${crypto.randomUUID()}`,values:row}); return;
+        }
+        const changes={...(overrides[record.id]||{})};
+        row.forEach((value,col)=>{if(value!==previous[index][col])changes[col]=value;});
+        if(Object.keys(changes).length)overrides[record.id]=changes;
+      });
+      return {overrides,extraRows};
+    });
+  };
   useTimeBlockPersistence({
     headers: timeBlockHeaderValues,
     rows: timeBlockGrid,
@@ -78,7 +111,11 @@ export default function App() {
     }
     if (activePage === "operation-settings") return <OperationSettings sectionId="operation-settings" />;
     if (activePage.startsWith("settings-")) return <OperationSettings sectionId={activePage} />;
-    if (activePage === "schedule-write") return <ScheduleWrite />;
+    if (activePage === "schedule-master") return <MasterSchedule rows={masterRows} error={settingsError} />;
+    if (activePage === "schedule-ads") return <AdvertisementSettings />;
+    if (["schedule-write", "schedule-bulk"].includes(activePage)) {
+      return <BulkRegistration rows={bulkRecords.map(record=>record.values)} setRows={updateBulkRows} reset={() => setBulkEdits({overrides:{},extraRows:[]})} error={settingsError} />;
+    }
     if (activePage === "work-memo") return <WorkMemo />;
     return (
       <TimeBlockInput
@@ -96,7 +133,7 @@ export default function App() {
 
       <section className="page">
         {renderPage()}
-        {["schedule-write", "work-memo"].includes(activePage) && <CoachTour key={activePage} steps={[{
+        {["schedule-write", "schedule-bulk", "schedule-ads", "schedule-master", "work-memo"].includes(activePage) && <CoachTour key={activePage} steps={[{
           target: ".page .output-page",
           title: activePage === "work-memo" ? "작업 메모" : "운행표 작성",
           description: activePage === "work-memo" ? "앞으로 작업할 내용과 우선순위를 확인하는 화면이에요." : "운행표 작성을 위한 화면이에요. TimeBlock 입력과 운영설정을 먼저 준비해주세요.",
