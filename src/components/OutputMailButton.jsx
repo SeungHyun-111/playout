@@ -30,7 +30,21 @@ export function buildOutputMailBody(element) {
     copies[index].removeAttribute("data-coach");
     properties.forEach(property => copies[index].style.setProperty(property, computed.getPropertyValue(property)));
   });
-  clone.style.cssText = "font-family:Malgun Gothic,Arial,sans-serif;font-size:14px;color:#000;background:#fff;";
+  // Keep the original mail format independent of the on-screen glass theme.
+  clone.style.cssText = "font-family:Arial,Malgun Gothic,sans-serif;font-size:14px;color:#000;background:#fff;";
+  clone.querySelectorAll("*").forEach(node => {
+    node.style.color = "#000";
+    node.style.background = "transparent";
+  });
+  clone.querySelectorAll("h2").forEach(node => { node.style.color = "#00a2df"; });
+  clone.querySelectorAll("table").forEach(node => {
+    node.style.background = "#fff";
+    node.style.borderCollapse = "collapse";
+  });
+  clone.querySelectorAll("th, td").forEach(node => {
+    node.style.border = "1px solid #000";
+  });
+  clone.querySelectorAll("th").forEach(node => { node.style.background = "#cfe0ef"; });
   return { html: `<html><head><meta charset="utf-8"></head><body>${clone.outerHTML}</body></html>`, text: element.innerText };
 }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Sidebar from "./components/Sidebar.jsx";
 import CoachTour from "./components/CoachTour.jsx";
 import useTimeBlockPersistence from "./hooks/useTimeBlockPersistence.js";
 import DawonScheduleOutput from "./pages/DawonScheduleOutput.jsx";
@@ -91,50 +92,7 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <aside className="sidebar" aria-label="페이지 네비게이션">
-        <div className="brand">
-          <span className="brand-mark">P</span>
-          <div>
-            <strong>Playout</strong>
-            <span>운행표 생성</span>
-          </div>
-        </div>
-
-        <nav className="nav-list">
-          {navItems.map((item) => {
-            const isGroupActive = activePage === item.id || item.children?.some((child) => child.id === activePage);
-
-            return (
-              <div className={`nav-group ${isGroupActive ? "active" : ""}`} key={item.id}>
-                <button
-                  className={`nav-item nav-parent ${activePage === item.id ? "active" : ""}`}
-                  type="button"
-                  onClick={() => setActivePage(item.id)}
-                >
-                  <span>{item.number}</span>
-                  {item.label}
-                </button>
-
-                {item.children && (
-                  <div className="nav-children" aria-label={`${item.label} 하위 메뉴`}>
-                    <div className="nav-section-label">{item.id === "operation-settings" ? "설정" : "출력"}</div>
-                    {item.children.map((child) => (
-                      <button
-                        className={`nav-item nav-child ${activePage === child.id ? "active" : ""}`}
-                        type="button"
-                        key={child.id}
-                        onClick={() => setActivePage(child.id)}
-                      >
-                        {child.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-      </aside>
+      <Sidebar items={navItems} activePage={activePage} onNavigate={setActivePage} />
 
       <section className="page">
         {renderPage()}
