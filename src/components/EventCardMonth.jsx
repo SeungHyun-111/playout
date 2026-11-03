@@ -14,14 +14,14 @@ export default function EventCardMonth({ rows, setRows, materials }) {
   const last=new Date(Date.UTC(year,number,0)).getUTCDate();
   const first=`${month}-01`, end=`${month}-${last}`;
   const visible=rows.filter(row=>{
+    if(String(row.id).startsWith("event-day-") && !row.eventCard && !row.materialId)return false;
     const start=dateKey(row.startDate), finish=dateKey(row.endDate)||start;
     return start ? start<=end && finish>=first : row.scheduleMonth===month;
   });
-  // Empty months get an editable daily scaffold, not persisted sample values.
-  const displayed=visible.length || initializedMonths.includes(month) ? visible : Array.from({length:last},(_,index)=>{
-    const date=`${month}-${String(index+1).padStart(2,"0")}`;
-    return {id:`event-day-${date}`,scheduleMonth:month,eventCard:"",startDate:date,endDate:date,materialId:""};
-  });
+  // An empty month starts with a single blank input row.
+  const displayed=visible.length || initializedMonths.includes(month) ? visible : [
+    {id:`event-empty-${month}`,scheduleMonth:month,eventCard:"",startDate:"",endDate:"",materialId:""},
+  ];
   const save=(updates)=>setRows(current=>{
     const next=[...current];
     if(!visible.length) displayed.forEach(row=>{if(!next.some(item=>item.id===row.id))next.push(row);});
@@ -50,8 +50,7 @@ export default function EventCardMonth({ rows, setRows, materials }) {
     setRows(current=>{
       const next=materialize(current);
       const anchor=displayed[afterIndex ?? displayed.length-1];
-      const date=anchor?.endDate || first;
-      const added={id:crypto.randomUUID(),scheduleMonth:month,eventCard:"",startDate:date,endDate:date,materialId:""};
+      const added={id:crypto.randomUUID(),scheduleMonth:month,eventCard:"",startDate:"",endDate:"",materialId:""};
       const index=anchor?next.findIndex(row=>row.id===anchor.id):-1;
       next.splice(index<0?next.length:index+1,0,added);return next;
     });
@@ -86,7 +85,7 @@ export default function EventCardMonth({ rows, setRows, materials }) {
       <button type="button" aria-label="다음 달" onClick={()=>move(1)}>›</button>
       <strong>{year}년 {number}월 행사카드 일정</strong>
     </div>
-    <p className="event-month-help">날짜는 선택한 연도를 기준으로 입력됩니다. 엑셀의 행사카드·시작일·종료일·배너소재 4열을 그대로 붙여넣을 수 있습니다. 빈 달에는 일별 입력칸이 표시됩니다.</p>
+    <p className="event-month-help">날짜는 선택한 연도를 기준으로 입력됩니다. 엑셀의 행사카드·시작일·종료일·배너소재 4열을 그대로 붙여넣을 수 있습니다. 빈 달에는 빈 행 하나로 시작합니다.</p>
     {notice&&<p role="status">{notice}</p>}
     <SimpleSettingsTable key={month} columns={columns.map(col=>col.key==="eventCard"?{...col,valueKey:"materialId"}:col)} rows={displayed} onChange={edit} onPaste={paste}
       onAddRow={()=>addRow()} onInsertRow={addRow} addRowLabel="일정 추가"
