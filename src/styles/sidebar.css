@@ -17,7 +17,7 @@
 .sidebar-toggle:hover { background: #fff; color: #203b59; }
 .sidebar-toggle svg { transition: transform .5s cubic-bezier(.22,1,.36,1); }
 .is-collapsed .sidebar-toggle svg { transform: rotate(180deg); }
-.morph-nav { position: relative; flex: 1; min-height: 0; margin-top: 12px; overflow: visible; }
+.morph-nav { position: relative; flex: 1; min-height: 0; margin-top: 12px; overflow-y:auto; overflow-x:hidden; }
 .morph-nav-group { position: static; }
 .morph-section { height: 32px; padding: 12px 12px 6px; display: flex; align-items: center; gap: 0; overflow: hidden; color: #adc3dd; font-size: 10px; letter-spacing: .5px; }
 .morph-section .morph-label { flex: 0 0 190px; }

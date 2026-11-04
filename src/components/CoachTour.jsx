@@ -50,7 +50,7 @@ export function TourProvider({activePage,onNavigate,children}) {
       const top=Math.max(8,box.top),left=Math.max(8,box.left);
       const right=Math.min(window.innerWidth-8,box.right),bottom=Math.min(window.innerHeight-8,box.bottom);
       if(right<=left || bottom<=top){setRect(null);return;}
-      const next={top,left,width:Math.min(right-left,step.maxWidth ?? 620),height:Math.min(bottom-top,step.maxHeight ?? 180)};
+      const next={top,left,width:Math.min(right-left,step.maxWidth ?? Infinity),height:Math.min(bottom-top,step.maxHeight ?? 180)};
       setRect(previous=>previous && Object.keys(next).every(key=>previous[key]===next[key]) ? previous : next);
     };
     const locate=()=>{
@@ -94,7 +94,7 @@ export function TourProvider({activePage,onNavigate,children}) {
   }
   return <TourContext.Provider value={{register,page:activePage}}>{children}
     <ChiikawaHelper paused={open} onClick={()=>{setMode("chooser");setStepIndex(0);setRect(null);}} />
-    {open && createPortal(<div className="tour-layer app-tour-layer" role="dialog" aria-modal="true" aria-label={mode==="chooser" ? "치이카와 안내 선택" : mode==="workflow" ? "업무 플로우 안내" : "현재 메뉴 도움말"}>
+    {open && createPortal(<div className={`tour-layer app-tour-layer ${rect && mode!=="chooser" ? "has-target" : ""}`} role="dialog" aria-modal="true" aria-label={mode==="chooser" ? "치이카와 안내 선택" : mode==="workflow" ? "업무 플로우 안내" : "현재 메뉴 도움말"}>
       <div className="tour-backdrop" onClick={close} />
       {rect && mode!=="chooser" && <div className="tour-highlight" style={{top:rect.top-4,left:rect.left-4,width:rect.width+8,height:rect.height+8}} />}
       <div className="tour-card app-tour-card" ref={cardRef} style={{...position,width:cardWidth}}>

@@ -1,4 +1,5 @@
 .app-tour-layer { z-index:1500; }
+.app-tour-layer.has-target .tour-backdrop { background:transparent; }
 .app-tour-card { max-width:calc(100vw - 24px); max-height:calc(100vh - 24px); overflow:auto; box-sizing:border-box; background:#243b53fa; color:var(--text); border:1px solid #a8ceff99; box-shadow:0 14px 60px #0007; }
 .app-tour-card p { line-height:1.8; color:var(--text); }
 .tour-chooser-heading { display:flex; align-items:center; justify-content:space-between; }

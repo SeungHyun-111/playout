@@ -617,12 +617,11 @@ export default function OperationSettings({ sectionId, onNavigate }) {
           <section className="default-settings-panel">
             <header>
               <strong>기본셋팅</strong>
-              <span>위 설정이 없을 때 유효기간 내의 기본 소재 적용 · 날짜 공란은 기간 제한 없음</span>
+              <span>기본 소재와 카드배너 제외 조건</span>
             </header>
             <div className="default-settings-grid">
               <section className="default-materials-section">
-                <div className="default-material-heading"><h2>기본 소재</h2><button type="button" onClick={addDefaultSetting}>셋팅 추가</button></div>
-                <p className="default-material-help">기간별로 미리 등록할 수 있습니다. 기간이 겹치면 시작일이 늦은 셋팅, 시작일도 같으면 나중에 추가한 셋팅을 적용합니다.</p>
+                <div className="default-material-heading"><h2>기본 소재</h2><div className="actions"><details className="operation-inline-help"><summary>적용 안내</summary><p>상위 설정에 소재가 없으면 유효기간 내의 기본 소재를 적용합니다. 날짜 공란은 기간 제한 없음입니다. 기간이 겹치면 시작일이 늦은 셋팅, 시작일도 같으면 나중에 추가한 셋팅을 적용합니다.</p></details><button type="button" onClick={addDefaultSetting}>셋팅 추가</button></div></div>
                 {[...new Set(defaultMaterialRows.map(row => row.settingId))].map(settingId => {
                   const group = defaultMaterialRows.filter(row => row.settingId === settingId);
                   return <div className="default-material-group" key={settingId}>
@@ -643,8 +642,9 @@ export default function OperationSettings({ sectionId, onNavigate }) {
                 })}
               </section>
               <div className="card-banner-exclusions">
-              <section>
-                <h2>카드배너 미운영</h2>
+              <section className="card-exclusion-panel">
+                <div className="card-exclusion-heading"><h2>카드배너 미운영</h2><details className="operation-inline-help"><summary>적용 안내</summary><p>여기에 등록한 MD분류는 카드배너 제외 대상입니다. 실제 적용은 기본 우선순위 또는 해당 기간의 예외설정 순서에 따릅니다.</p></details></div>
+                <div className="default-material-group"><div className="default-material-heading"><h3>MD분류 기준</h3></div>
                 <SimpleSettingsTable
                   columns={disabledMdColumns}
                   rows={disabledMdRows}
@@ -652,10 +652,11 @@ export default function OperationSettings({ sectionId, onNavigate }) {
                   onAddRow={addDisabledMdRow}
                   onDeleteRow={deleteDisabledMdRow}
                 />
+                </div>
               </section>
-              <section>
-                <h2>상품명·편성코드명 키워드 제외</h2>
-                <p className="card-keyword-help">상품명 또는 편성코드명 중 하나라도 등록한 키워드가 포함되면 카드배너(배너1)를 제외합니다(OR 조건). 예: 상품명에 ‘스케쳐스’가 없어도 편성코드명에 ‘스케쳐스’가 있으면 제외합니다. 여러 키워드 중 하나만 일치해도 적용됩니다. 단, 0번 예외설정에서 ‘1번보다 우선’으로 지정한 항목은 해당 기간에 우선 적용됩니다.</p>
+              <section className="card-exclusion-panel">
+                <div className="card-exclusion-heading"><h2 title="상품명·편성코드명 키워드 제외">키워드 제외</h2><details className="operation-inline-help"><summary>OR 조건 안내</summary><p>상품명 또는 편성코드명 중 하나라도 등록한 키워드를 포함하면 카드배너 제외 대상입니다(OR 조건). 예: 상품명에 ‘스케쳐스’가 없어도 편성코드명에 있으면 해당합니다. 여러 키워드 중 하나만 일치해도 적용됩니다. 실제 적용은 기본 우선순위 또는 해당 기간의 예외설정 순서에 따릅니다.</p></details></div>
+                <div className="default-material-group"><div className="default-material-heading"><h3>상품명 OR 편성코드명</h3></div>
                 <SimpleSettingsTable
                   columns={excludedKeywordColumns}
                   rows={excludedKeywordRows}
@@ -663,6 +664,7 @@ export default function OperationSettings({ sectionId, onNavigate }) {
                   onAddRow={() => setExcludedKeywordRows(current => [...current,{id:crypto.randomUUID(),keyword:""}])}
                   onDeleteRow={rowIndex => setExcludedKeywordRows(current => current.filter((_,index) => index !== rowIndex))}
                 />
+                </div>
               </section>
               </div>
             </div>
