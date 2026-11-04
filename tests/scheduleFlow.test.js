@@ -36,7 +36,7 @@ test("maps source fields, preserves unknown blanks and applies priority per slot
   const master=buildMaster(bulk);
   assert.equal(master[0][3],"40");assert.equal(master[0][8],"");assert.equal(master[0][13],"");
   assert.equal(master[0][10],"123");assert.equal(master[0][12],"영상A");assert.equal(master[0][16],"");
-  assert.equal(MASTER_HEADERS.length,24);
+  assert.equal(MASTER_HEADERS.length,25);
 });
 test("explicit special-request blanks clear all banners and datetime matching accepts slashes",()=>{
   const config={...settings,specialRequests:[{pgmDateTime:"2026/11/03 01:31",programName:"상품A",material3:"SPECIAL"}]};

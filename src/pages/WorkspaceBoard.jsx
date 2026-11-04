@@ -46,7 +46,7 @@ export default function WorkspaceBoard({collection,defaults=EMPTY_DEFAULTS}) {
     catch {setActionError("삭제하지 못했습니다. DB 연결과 쓰기 권한을 확인해주세요.");}
     finally {pending.current=false;setBusy(false);}
   };
-  return <div className="output-page workspace-board">
+  return <div className="output-page workspace-board" data-coach="workspace-board">
     <header className="topbar"><div><h1>{config.title}</h1><p>{config.description}</p></div><button type="button" disabled={loading || busy || Boolean(error)} onClick={()=>start(null)}>+ {config.singular} 작성</button></header>
     <div className="board-toolbar">
       <label className="board-search">검색<input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder={isQa ? "질문·답변·소재ID 검색" : "제목·내용 검색"} /></label>

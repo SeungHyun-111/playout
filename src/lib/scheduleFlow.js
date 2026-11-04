@@ -1,5 +1,5 @@
 export const BULK_HEADERS = ["채널", "방송일자", "시작시간", "종료시간", "영상코드", "메모코드명", "MD분류", "편성코드명", "소재ID", "상품코드", "PGM명", "카드제외 여부", "특이사항1", "특이사항2", "프로모션 여부", "스케쳐스/정호영/이종임\nCI 0F001375", "메모코드", "PGM명", "특이사항3", "특이사항4", "플로팅배너1", "플로팅배너2", "플로팅배너3", "플로팅배너4", "비고(플로팅배너5)"];
-export const MASTER_HEADERS = ["No", "방송일자", "시작시간", "방송시간(분)", "광고시간(초)", "종료시간", "소재ID", "다원방송", "프로그램코드", "프로그램명", "편성코드", "편성코드명", "제작프로그램명", "카테고리명", "MD분류명", "배너소재", "배너시간", "배너소재2", "배너시간", "배너소재3", "배너시간", "배너소재4", "배너시간", "배너소재5"];
+export const MASTER_HEADERS = ["No", "방송일자", "시작시간", "방송시간(분)", "광고시간(초)", "종료시간", "소재ID", "다원방송", "프로그램코드", "프로그램명", "편성코드", "편성코드명", "제작프로그램명", "카테고리명", "MD분류명", "배너소재", "배너시간", "배너소재2", "배너시간", "배너소재3", "배너시간", "배너소재4", "배너시간", "배너소재5", "편성팀 코멘트"];
 import { resolvePriorityExceptions } from "./priorityExceptions.js";
 const text = value => String(value ?? "").trim();
 const list = value => Array.isArray(value) ? value.filter(Boolean) : Object.values(value || {}).filter(Boolean);
@@ -83,7 +83,7 @@ export function buildBulk(headers, rows, settings = {}, edits = {}) {
 export function buildMaster(records, settings = {}, { structured = false } = {}) {
   const programs = records.filter(r=>r.values.some(v=>text(v))).map((record,index)=>({record,index,date:dateKey(record.values[1]),start:seconds(record.values[2])}));
   const insertions = new Map();
-  list(settings.advertisements).forEach(rule=>{
+  list(settings.advertisements).forEach((rule,ruleIndex)=>{
     if(!timeKey(rule.startTime))return;
     const hour=timeKey(rule.startTime).slice(0,2);
     const catalog=list(settings.advertisementCatalog).find(ad=>text(ad.material) && text(ad.material)===text(rule.material));
@@ -97,7 +97,7 @@ export function buildMaster(records, settings = {}, { structured = false } = {})
       ad[1]=date.replaceAll("-","/"); ad[2]=clock(first.start); ad[4]=duration;
       ad[5]=duration!=="" && Number.isFinite(Number(duration)) && Number(duration)>=0 ? clock(first.start+Number(duration)) : "";
       ad[6]=material; ad[7]="N"; ad[12]=name;
-      insertions.set(first.index,[...(insertions.get(first.index)||[]),{values:ad,kind:"advertisement",channel: first.record.values[0] || "",sourceId:first.record.id}]);
+      insertions.set(first.index,[...(insertions.get(first.index)||[]),{values:ad,kind:"advertisement",channel: first.record.values[0] || "",sourceId:first.record.id,commentKey:`ad-${first.record.id}-${idFor(text(rule.id) || String(ruleIndex))}`}]);
     });
   });
   const output=[];
@@ -109,8 +109,8 @@ export function buildMaster(records, settings = {}, { structured = false } = {})
     out[3]=start!==null && end!==null ? String(((end-start+86400)%86400)/60) : "";
     out[7]=text(v[0]) ? (text(v[0]).replace(/\s/g,"") === "전체" ? "N" : "Y") : "";
     out[8]=m.programCode || "";out[9]=v[10];out[10]=m.code||"";out[11]=v[7];out[12]=m.videoName||"";out[13]=m.category||"";out[14]=v[6];
-    [20,21,22,23].forEach((col,i)=>{out[15+i*2]=v[col];});
-    output.push({values:out,kind:"program",channel:v[0] || "",sourceId:record.id});
+    [20,21,22,23,24].forEach((col,i)=>{out[15+i*2]=v[col];});
+    output.push({values:out,kind:"program",channel:v[0] || "",sourceId:record.id,commentKey:`program-${record.id}`});
   });
   const entries = output.map((entry,i)=>({...entry,values:entry.values.map((v,c)=>c===0?String(i+1):v??"")}));
   return structured ? entries : entries.map(entry=>entry.values);

@@ -14,7 +14,7 @@ const promotionColumns = [
   { key: "material2", label: "우상단CI(배너2)", type: "select", coachId: "promotion-material-2" },
   { key: "material3", label: "L바(배너3)", type: "select", coachId: "promotion-material-3" },
   { key: "material4", label: "특이 배너(배너4)", coachId: "promotion-material-4" },
-  { key: "note", label: "비고" },
+  { key: "note", label: "비고(플로팅배너5)" },
 ];
 
 const plannedPgmColumns = [

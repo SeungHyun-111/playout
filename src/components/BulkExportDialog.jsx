@@ -37,7 +37,7 @@ export default function BulkExportDialog({ rows }) {
     popup.focus();setTimeout(()=>popup.print(),200);
   };
   return <>
-    <button type="button" disabled={!candidates.length} onClick={()=>{setSelected(null);setStatus("");dialogRef.current.showModal();}}>내려받기·인쇄</button>
+    <button data-coach="bulk-export" type="button" disabled={!candidates.length} onClick={()=>{setSelected(null);setStatus("");dialogRef.current.showModal();}}>내려받기·인쇄</button>
     <dialog className="bulk-export-dialog" ref={dialogRef} aria-labelledby="bulk-export-title">
       <h2 id="bulk-export-title">내려받기·인쇄 대상 선택</h2>
       <p>현재 선택한 날짜에 있는 채널 값만 표시합니다. 체크한 채널의 항목을 출력합니다.</p>

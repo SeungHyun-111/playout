@@ -6,7 +6,7 @@ import Sidebar from "./components/Sidebar.jsx";
 import MasterSchedule from "./pages/MasterSchedule.jsx";
 import AdvertisementSettings from "./pages/AdvertisementSettings.jsx";
 import BulkRegistration from "./pages/BulkRegistration.jsx";
-import CoachTour from "./components/CoachTour.jsx";
+import { TourProvider } from "./components/CoachTour.jsx";
 import useTimeBlockPersistence from "./hooks/useTimeBlockPersistence.js";
 import DawonScheduleOutput from "./pages/DawonScheduleOutput.jsx";
 import EpgOutput from "./pages/EpgOutput.jsx";
@@ -15,6 +15,8 @@ import TimeBlockInput, { createInitialTimeBlockGrid, timeBlockHeaders } from "./
 import WorkMemo from "./pages/WorkMemo.jsx";
 import WorkspaceBoard from "./pages/WorkspaceBoard.jsx";
 import { buildMaterialNames } from "./lib/scheduleView.js";
+import useMasterComments from "./hooks/useMasterComments.js";
+import { applyMasterComments } from "./lib/masterComments.js";
 
 const navItems = [
   {
@@ -86,7 +88,8 @@ export default function App() {
   const [bulkEdits, setBulkEdits] = useState({overrides:{},extraRows:[]});
   useRtdbValue("bulkRegistration/edits",bulkEdits,setBulkEdits);
   const bulkRecords=buildBulk(timeBlockHeaderValues,timeBlockGrid,settings,bulkEdits);
-  const masterEntries=buildMaster(bulkRecords,settings,{structured:true});
+  const {comments:masterComments,setComment,loaded:commentsLoaded,error:commentsError}=useMasterComments();
+  const masterEntries=applyMasterComments(buildMaster(bulkRecords,settings,{structured:true}),masterComments);
   const masterRows=masterEntries.map(entry=>entry.values);
   const materialNames=buildMaterialNames(timeBlockHeaderValues,timeBlockGrid,settings);
   const updateBulkRows = update => {
@@ -121,7 +124,7 @@ export default function App() {
     }
     if (activePage === "operation-settings") return <OperationSettings sectionId="operation-settings" onNavigate={setActivePage} />;
     if (activePage.startsWith("settings-")) return <OperationSettings sectionId={activePage} onNavigate={setActivePage} />;
-    if (activePage === "schedule-master") return <MasterSchedule rows={masterRows} entries={masterEntries} materialNames={materialNames} sourceSnapshot={{timeBlock:{headers:timeBlockHeaderValues,rows:timeBlockGrid},settings,bulkEdits}} error={settingsError} />;
+    if (activePage === "schedule-master") return <MasterSchedule rows={masterRows} entries={masterEntries} materialNames={materialNames} setComment={setComment} commentsLoaded={commentsLoaded} commentsError={commentsError} sourceSnapshot={{timeBlock:{headers:timeBlockHeaderValues,rows:timeBlockGrid},settings,bulkEdits,masterComments}} error={settingsError} />;
     if (activePage === "schedule-ads") return <AdvertisementSettings />;
     if (["schedule-write", "schedule-bulk"].includes(activePage)) {
       return <BulkRegistration rows={bulkRecords.map(record=>record.values)} materialNames={materialNames} setRows={updateBulkRows} reset={() => setBulkEdits({overrides:{},extraRows:[]})} error={settingsError} />;
@@ -139,17 +142,13 @@ export default function App() {
   };
 
   return (
-    <main className="app-shell">
+    <TourProvider activePage={activePage} onNavigate={setActivePage}><main className="app-shell">
       <Sidebar items={navItems} activePage={activePage} onNavigate={setActivePage} />
 
       <section className="page">
         {renderPage()}
-        {["schedule-write", "schedule-bulk", "schedule-ads", "schedule-master", "work-memo"].includes(activePage) && <CoachTour key={activePage} steps={[{
-          target: ".page .output-page",
-          title: activePage === "work-memo" ? "작업 메모" : "운행표 작성",
-          description: activePage === "work-memo" ? "앞으로 작업할 내용과 우선순위를 확인하는 화면이에요." : "운행표 작성을 위한 화면이에요. TimeBlock 입력과 운영설정을 먼저 준비해주세요.",
-        }]} />}
+
       </section>
-    </main>
+    </main></TourProvider>
   );
 }

@@ -100,6 +100,10 @@ option { background: #263c55; color: #f6faff; }
 .master-schedule-table tbody tr:hover td { background: #526f8dcc; }
 .master-schedule-table td:nth-child(12), .master-schedule-table td:nth-child(13) { white-space: normal; min-width: 220px; max-width: 300px; text-align: left; line-height: 1.5; }
 .master-schedule-status { padding: 10px 22px 0; }
+.master-schedule-table td.master-comment-cell { padding:0; min-width:300px; }
+.master-comment-cell textarea { display:block; width:320px; height:36px; min-height:36px; padding:9px 10px; border:0; background:transparent; color:var(--text); font:inherit; white-space:pre; resize:vertical; }
+.master-comment-cell textarea:focus { outline:2px solid #c2e0ff; outline-offset:-2px; background:#a8ceff12; }
+.master-comment-cell textarea::placeholder { color:var(--muted); font-size:11px; }
 .advertisement-table { min-width: 750px; }
 .advertisement-table th:nth-child(2) { width: 90px; }
 .advertisement-table th:nth-child(4) { width: 32%; }

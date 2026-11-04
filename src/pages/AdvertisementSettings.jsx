@@ -14,7 +14,7 @@ export default function AdvertisementSettings() {
     <section className="settings-workspace">
       <div className="advertisement-section-heading"><h2>스케줄 설정</h2><button type="button" onClick={() => setRows(current => [...current, { id: crypto.randomUUID(), startTime: "", disaster: false, material: "", materialName: "", durationSeconds: "" }])}>행 추가</button></div>
       <p style={{ marginBottom: 12 }}>시작시간(hour)을 기준으로 첫 PGM 앞에 광고 생성</p>
-      <table className="settings-table advertisement-table">
+      <table className="settings-table advertisement-table" data-coach="advertisement-schedule">
         <thead><tr><th>시작시간</th><th>재난방송</th><th>소재</th><th>소재명</th><th>광고시간(초)</th><th>관리</th></tr></thead>
         <tbody>{rows.map(row => <tr key={row.id}>
           <td><FlexibleDateInput label="시작시간" kind="time" value={row.startTime} onChange={value => change(row.id, "startTime", value)} /></td>
@@ -26,7 +26,7 @@ export default function AdvertisementSettings() {
         </tr>)}</tbody>
       </table>
       {!rows.length && <div className="empty-state"><p>등록된 광고가 없습니다. 행 추가를 눌러 공익방송 또는 고지사항을 입력해주세요.</p></div>}
-      <div className="advertisement-section-heading advertisement-catalog-heading"><h2>광고 목록</h2><button type="button" onClick={() => setAdvertisements(current => [...current, { id: crypto.randomUUID(), material: "", materialName: "", durationSeconds: "" }])}>광고 추가</button></div>
+      <div className="advertisement-section-heading advertisement-catalog-heading" data-coach="advertisement-catalog"><h2>광고 목록</h2><button type="button" onClick={() => setAdvertisements(current => [...current, { id: crypto.randomUUID(), material: "", materialName: "", durationSeconds: "" }])}>광고 추가</button></div>
       <table className="settings-table advertisement-table">
         <thead><tr><th>소재</th><th>소재명</th><th>광고시간(초)</th><th>관리</th></tr></thead>
         <tbody>{advertisements.map(ad => <tr key={ad.id}>

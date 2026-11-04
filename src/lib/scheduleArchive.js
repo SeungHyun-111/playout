@@ -20,16 +20,16 @@ export function buildArchiveUpdates({ entries, versionId, savedAt, sourceSnapsho
     const eventId = `e${String(index + 1).padStart(6, "0")}`;
     const materials = [
       { role: entry.kind === "advertisement" ? "advertisement" : "main", materialId: text(row[6]) },
-      ...[15,17,19,21,23].map((col,i)=>({role:`banner${i+1}`,materialId:text(row[col]),duration:text(row[col+1])})),
+      ...[15,17,19,21,23].map((col,i)=>({role:`banner${i+1}`,materialId:text(row[col]),duration:col===23 ? "" : text(row[col+1])})),
     ].filter(material=>material.materialId);
     const event = {
-      eventId, sourceId: entry.sourceId || "", broadcastDate: date,
+      eventId, sourceId: entry.sourceId || "", commentKey:entry.commentKey || "", broadcastDate: date,
       kind: entry.kind, channel: entry.kind === "advertisement" ? "" : text(entry.channel),
       scheduledStartTime: timeKey(row[2]), scheduledEndTime: timeKey(row[5]),
       programCode:text(row[8]),programName:text(row[9]),scheduleCode:text(row[10]),
       scheduleName:text(row[11]),videoName:text(row[12]),categoryName:text(row[13]),mdCategory:text(row[14]),
       programDurationMinutes:text(row[3]),adDurationSeconds:text(row[4]),
-      dawonBroadcast:text(row[7]),materials,status:"scheduled",rawValues:row,
+      dawonBroadcast:text(row[7]),programmingComment:String(row[24] ?? ""),materials,status:"scheduled",rawValues:row,
     };
     const day = days[date] ||= {events:{},eventCount:0,materialUsageCount:0};
     day.events[eventId] = event;

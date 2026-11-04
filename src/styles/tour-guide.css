@@ -1,0 +1,11 @@
+.app-tour-layer { z-index:1500; }
+.app-tour-card { max-width:calc(100vw - 24px); max-height:calc(100vh - 24px); overflow:auto; box-sizing:border-box; background:#243b53fa; color:var(--text); border:1px solid #a8ceff99; box-shadow:0 14px 60px #0007; }
+.app-tour-card p { line-height:1.8; color:var(--text); }
+.tour-chooser-heading { display:flex; align-items:center; justify-content:space-between; }
+.tour-chooser-heading > button { height:26px; padding:0 8px; }
+.tour-mode-choice { display:grid; gap:7px; width:100%; height:auto; min-height:80px; padding:14px; text-align:left; white-space:normal; }
+.tour-mode-choice strong { font-size:14px; }
+.tour-mode-choice span { font-size:12px; line-height:1.7; color:var(--muted); }
+.app-tour-card small { font-size:11px; color:var(--muted); }
+.app-tour-card .tour-actions { flex-wrap:wrap; justify-content:flex-end; }
+.app-tour-card .tour-actions button { padding:0 9px; font-size:12px; }

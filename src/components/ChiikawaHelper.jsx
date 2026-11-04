@@ -63,7 +63,7 @@ export default function ChiikawaHelper({ onClick, paused }) {
     if (buttonRef.current.hasPointerCapture(event.pointerId)) buttonRef.current.releasePointerCapture(event.pointerId);
   };
 
-  return <button ref={buttonRef} className="chiikawa-wanderer" type="button" aria-label="치이카와: 클릭하면 도움말, 드래그하면 위치 이동" onClick={event => {
+  return <button ref={buttonRef} className="chiikawa-wanderer" type="button" aria-label="치이카와: 업무 플로우 안내 또는 현재 메뉴 도움말 선택, 드래그하면 위치 이동" onClick={event => {
     if (suppressClickRef.current && event.detail !== 0) { suppressClickRef.current = false; return; }
     onClick();
   }}
