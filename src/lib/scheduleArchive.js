@@ -9,6 +9,34 @@ const validDate = value => {
   return /^\d{4}-\d{2}-\d{2}$/.test(date) && new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) === date;
 };
 
+// 날짜별 저장본 하나만 유지합니다. 기존 버전의 검색 인덱스도 함께 교체합니다.
+export function replaceArchiveVersions(updates, previousByDate) {
+  const next = {};
+  Object.entries(updates).forEach(([path, value]) => {
+    if (/^scheduleArchive\/(materialUsage|programUsage)\//.test(path)) {
+      const parts = path.split('/');
+      const id = parts.pop();
+      (next[parts.join('/')] ||= {})[id] = value;
+    } else next[path] = value;
+  });
+  const cleanup = {};
+  Object.entries(previousByDate).forEach(([date, versions]) => {
+    Object.entries(versions || {}).forEach(([versionId, version]) => {
+      cleanup[`scheduleArchive/versions/${date}/${versionId}`] = null;
+      cleanup[`scheduleArchive/versionHistory/${date}/${versionId}`] = null;
+      Object.values(version.events || {}).forEach(event => {
+        Object.values(event.materials || {}).forEach(material => {
+          if (material.materialId) cleanup[`scheduleArchive/materialUsage/${searchKey(material.materialId)}/${date}/${versionId}`] = null;
+        });
+        [event.programCode, event.scheduleCode].filter(Boolean).forEach(code => {
+          cleanup[`scheduleArchive/programUsage/${searchKey(code)}/${date}/${versionId}`] = null;
+        });
+      });
+    });
+  });
+  return { ...cleanup, ...next };
+}
+
 export function buildArchiveUpdates({ entries, versionId, savedAt, sourceSnapshot }) {
   if (!entries.length) throw new Error("저장할 운행표가 없습니다.");
   const updates = {}, days = {};

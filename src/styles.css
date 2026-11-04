@@ -1288,3 +1288,11 @@ button:hover {
 
 .chiikawa-wanderer { height: 121px; min-height: 121px; cursor: grab; touch-action: none; user-select: none; }
 .chiikawa-wanderer:active { cursor: grabbing; }
+.gas-transfer { padding: 12px 18px; border-bottom: 1px solid #7891ab55; }
+.gas-transfer summary { cursor: pointer; font-weight: 600; }
+.gas-transfer fieldset { border: 0; padding: 12px 0 0; margin: 0; display: grid; gap: 10px; min-width: 0; }
+.gas-transfer fieldset > label { display: flex; align-items: center; gap: 10px; }
+.gas-transfer input[type="url"] { width: min(600px, 75%); }
+.gas-channel-options { display: flex; flex-wrap: wrap; gap: 16px; }
+.gas-channel-options label { display: flex; align-items: center; gap: 6px; }
+.gas-transfer p { font-size: 12px; }

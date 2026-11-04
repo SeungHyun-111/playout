@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildArchiveUpdates, searchKey } from "../src/lib/scheduleArchive.js";
+import { buildArchiveUpdates, replaceArchiveVersions, searchKey } from "../src/lib/scheduleArchive.js";
 import { buildBulk, buildMaster } from "../src/lib/scheduleFlow.js";
 
 const makeEntries = () => buildMaster(buildBulk(
@@ -9,6 +9,24 @@ const makeEntries = () => buildMaster(buildBulk(
    ["2026-11-05","01:00 ~ 02:00","전체","MAIN/.#","PGM1","방송A"]],
   {defaultMaterials:[{materialType:"유형",material2:"CI"}]}
 ),{}, {structured:true});
+
+test('latest-only replacement removes old versions and removed material indexes without conflicting paths', () => {
+  const entries = makeEntries().slice(0, 1);
+  const old = buildArchiveUpdates({ entries, versionId: 'v1', savedAt: 1, sourceSnapshot: {} });
+  const previous = { '2026-11-04': { v1: old.updates['scheduleArchive/versions/2026-11-04/v1'] } };
+  const nextEntries = entries.map(entry => ({ ...entry, values: entry.values.map((value, col) => col === 6 ? 'NEW' : value) }));
+  const next = buildArchiveUpdates({ entries: nextEntries, versionId: 'current', savedAt: 2, sourceSnapshot: {} });
+  const updates = replaceArchiveVersions(next.updates, previous);
+  assert.equal(updates['scheduleArchive/versions/2026-11-04/v1'], null);
+  assert.equal(updates[`scheduleArchive/materialUsage/${searchKey('MAIN/.#')}/2026-11-04/v1`], null);
+  assert.ok(updates[`scheduleArchive/materialUsage/${searchKey('NEW')}/2026-11-04/current`]);
+  const current = next.updates['scheduleArchive/versions/2026-11-04/current'];
+  const again = replaceArchiveVersions(next.updates, { '2026-11-04': { current } });
+  assert.ok(again['scheduleArchive/versions/2026-11-04/current'].events);
+  const paths = Object.keys(again);
+  assert.ok(paths.every(path => !paths.some(other => other.startsWith(path + '/'))));
+  assert.ok(paths.every(path => !path.includes('2026-11-05')));
+});
 
 test("archives selected days with named fields and matching material and program references",()=>{
   const entries=makeEntries();

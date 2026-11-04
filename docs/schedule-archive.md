@@ -1,6 +1,7 @@
 # 주조 운행표 저장 및 검색
 
-주조 운행표에서 선택한 날짜 전체를 저장한다. 같은 날짜를 다시 저장하면 새 버전이 생성된다.
+내보내는 날짜·채널의 운행표를 저장한다. 같은 날짜를 다시 저장하면 해당 날짜는 최신 저장본 하나로 교체한다.
+저장 ID는 `current`로 고정한다. 해당 날짜에 기존 버전이 있으면 원본과 검색 인덱스를 새 저장본과 함께 원자적으로 교체한다. 다른 날짜는 유지한다.
 하나의 루트 update로 원본, 날짜 목록, 버전 목록, 검색 인덱스를 함께 기록한다.
 성공 메시지는 서버가 쓰기를 승인한 뒤 표시된다. 기존 timeBlock/settings 자동 저장과 별개이다.
 
@@ -8,7 +9,7 @@
 
 - `scheduleArchive/dates/{YYYY-MM-DD}`: 최신 저장 버전, 서버 저장시각, 건수
 - `scheduleArchive/versions/{date}/{versionId}`: 필드명이 있는 events, 원본 표, 생성 입력·설정 스냅샷
-- `scheduleArchive/versionHistory/{date}/{versionId}`: 가벼운 버전 목록
+- `scheduleArchive/versionHistory/{date}/current`: 최신 저장 요약 하나 (기존 조회 구조 호환)
 - `scheduleArchive/materialUsage/{encodedMaterialId}/{date}/{versionId}/{usageId}`: 본편·광고·배너 슬롯별 사용 내역
 - `scheduleArchive/programUsage/{encodedCode}/{date}/{versionId}/{eventId}`: 프로그램코드·편성코드 검색
 
@@ -24,12 +25,12 @@ RTDB 키 길이 제한상 비정상적으로 긴 소재ID는 저장이 거절될
 ```js
 await listSavedScheduleDates("2026-11-01", "2026-11-30");
 await loadSavedSchedule("2026-11-04"); // 최신 저장본
-await loadSavedSchedule("2026-11-04", versionId); // 과거 버전
+await loadSavedSchedule("2026-11-04", "current"); // 날짜별 최신 저장본
 await findMaterialSchedules("0P001", "2026-11-01", "2026-11-30");
 ```
 
 소재 검색은 반드시 dates의 최신 versionId와 일치하는 사용 내역만 반환한다.
-과거 버전의 소재 인덱스를 단순 합산하면 삭제·변경된 편성까지 중복 집계된다.
+교체 시 더 이상 사용하지 않는 소재·프로그램 인덱스도 제거한다.
 이벤트 ID는 버전 내부의 식별자이다. 버전 간 동일 방송 추적용 영구 ID는 아니다.
 
 ## 의미 및 운영
@@ -42,4 +43,4 @@ await findMaterialSchedules("0P001", "2026-11-01", "2026-11-30");
 - 기존 Firebase 서버 보안 규칙을 변경하지 않는다. 해당 경로 읽기/쓰기가 허용되어야 동작한다.
 - 검색/다운로드 화면은 아직 없으며 위 API로 구현할 수 있다.
 
-전체 이력 보관으로 DB 사용량은 누적된다. 장기 운영 시 과거 버전 보존 기간을 정해 관리한다.
+구글 시트 수정본은 별도 탭으로 유지하지만 RTDB에는 날짜별 최신 값만 남긴다. 기존 날짜는 다음 저장 시 이전 버전이 정리된다.

@@ -1,0 +1,50 @@
+.gas-transfer-dialog { --text:#172b44; --muted:#65758a; width:min(580px,calc(100vw - 32px)); max-height:88vh; overflow:auto; margin:auto; padding:28px; border:1px solid #ffffff; border-radius:24px; color:#172b44; background:#f7faff; box-shadow:0 28px 100px #10243b55; font-family:inherit; }
+.gas-transfer-dialog::backdrop { background:#11273e88; backdrop-filter:blur(7px); }
+.gas-dialog-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.gas-eyebrow { color:#5276a2; font-size:10px; letter-spacing:2px; font-weight:700; }
+.gas-transfer-dialog h2 { margin:8px 0; font-size:24px; letter-spacing:-.8px; }
+.gas-transfer-dialog p { font-size:12px; line-height:1.7; color:#65758a; margin:8px 0; }
+.gas-transfer-dialog button { color:#36516e; background:#edf2f8; border:1px solid #d8e2ee; font-family:inherit; cursor:pointer; }
+.gas-transfer-dialog button:hover { color:#172b44; background:#e0e9f5; }
+.gas-transfer-dialog button:disabled { opacity:.45; cursor:default; }
+.gas-transfer-dialog .gas-close { width:32px; height:32px; min-width:32px; padding:0; border-radius:50%; font-size:23px; }
+.gas-transfer-dialog fieldset { border:0; margin:20px 0 0; padding:0; min-width:0; }
+.gas-section-label { font-size:12px; font-weight:700; }
+.gas-dates { display:grid; gap:10px; padding:16px; background:#eaf0f8; border-radius:12px; }
+.gas-dates > div { display:flex; flex-wrap:wrap; gap:6px; }
+.gas-dates > div > span { font-size:13px; font-weight:600; }
+.gas-dates > div > span:not(:last-child)::after { content:' / '; color:#98a7ba; }
+.gas-channel-heading { display:flex; justify-content:space-between; align-items:center; margin:22px 0 10px; }
+.gas-channel-heading button { border:0; background:none; padding:0; font-size:11px; }
+.gas-transfer-dialog .gas-channel-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.gas-transfer-dialog .gas-channel-options label { position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:18px 15px; background:#fff; border:1px solid #d7e1ee; border-radius:12px; cursor:pointer; font-size:13px; }
+.gas-transfer-dialog .gas-channel-options label.selected { border-color:#4d7edf; background:#ebf2ff; color:#2359b3; }
+.gas-transfer-dialog .gas-channel-options input { position:absolute; opacity:0; width:1px; height:1px; }
+.gas-transfer-dialog .gas-channel-options label:focus-within { outline:2px solid #4d7edf; outline-offset:2px; }
+.gas-channel-check { display:grid; place-items:center; width:20px; height:20px; border-radius:50%; border:1px solid #d7e1ee; color:transparent; }
+.selected .gas-channel-check { background:#3e74d8; color:#fff; border-color:#3e74d8; }
+.gas-transfer-dialog .gas-common-note { margin:10px 0 20px; font-size:11px; }
+.gas-connection { padding:14px 0; border-top:1px solid #dfe6ef; }
+.gas-connection summary { display:flex; justify-content:space-between; cursor:pointer; font-size:12px; font-weight:600; }
+.gas-connection summary span { color:#7d8da0; font-size:11px; font-weight:400; }
+.gas-connection label { display:grid; gap:8px; margin-top:16px; font-size:12px; font-weight:600; }
+.gas-transfer-dialog .gas-connection input { color-scheme:light; width:100%; min-width:0; padding:11px 12px; border:1px solid #cedbea; border-radius:9px; background:#fff; color:#263d56; font:inherit; font-weight:400; }
+.gas-connection code { font-size:11px; }
+.gas-dialog-footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; border-top:1px solid #dfe6ef; padding-top:20px; margin-top:6px; }
+.gas-dialog-footer > div { display:grid; gap:5px; }
+.gas-dialog-footer strong { font-size:14px; }
+.gas-dialog-footer span { font-size:10px; color:#7d8da0; }
+.gas-transfer-dialog .gas-submit { padding:12px 18px; background:#2866cf; border-color:#2866cf; border-radius:10px; color:white; font-size:13px; font-weight:600; }
+.gas-transfer-dialog .gas-submit:hover { background:#1d54b1; color:white; }
+.gas-transfer-dialog > p[role="status"] { margin-top:18px; padding:12px; background:#eaf0f8; border-radius:10px; }
+.gas-transfer-dialog a { color:#2866cf; font-size:12px; overflow-wrap:anywhere; }
+.gas-result { margin-top:18px; padding:14px; border:1px solid #cbd8e8; background:#eaf0f8; border-radius:12px; }
+.gas-result > strong { font-size:14px; }
+.gas-result p { margin-bottom:0; }
+.gas-result.success { border-color:#9fcdb8; background:#eaf7ef; color:#226341; }
+.gas-result.failed { border-color:#e1abab; background:#fff0f0; color:#a42f2f; }
+.gas-result.unknown { border-color:#e4c68c; background:#fff7e7; color:#825913; }
+.gas-diagnostics { margin-top:16px; font-size:12px; }
+.gas-diagnostics summary { cursor:pointer; }
+.gas-diagnostics section { margin-top:14px; }
+.gas-diagnostics pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#eaf0f8; border-radius:8px; padding:12px; font-size:11px; line-height:1.8; }
