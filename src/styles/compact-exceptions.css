@@ -1,0 +1,71 @@
+.compact-exception-board { gap:12px; }
+.compact-exception-board .exception-settings-heading { gap:12px; }
+.compact-exception-board h2 { margin:0 0 4px; font-size:16px; }
+.compact-exception-board button { height:29px; padding:0 9px; font-size:12px; white-space:nowrap; }
+.compact-exception-board :is(input,select) { min-width:0; color:var(--text); background:#19334e50; border:1px solid var(--line); border-radius:5px; font:inherit; font-size:12px; height:30px; padding:4px 8px; }
+.compact-exception-board :is(input,select):focus-visible { outline:2px solid #a8ceff; outline-offset:1px; }
+.activity-legend { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:11px; color:var(--muted); }
+.activity-legend small { margin-left:auto; font-size:11px; }
+.activity-badge { display:inline-block; padding:3px 6px; border-radius:4px; border:1px solid currentColor; white-space:nowrap; line-height:1.2; font-size:10px; font-weight:600; }
+.activity-new { color:#92ecd0; background:#61dfb816; }
+.activity-moved { color:#9bcaff; background:#70b6ff16; }
+.activity-edited { color:#f5d58a; background:#f3bf5716; }
+.compact-settings-help { font-size:11px; color:var(--muted); }
+.compact-settings-help summary { cursor:pointer; width:fit-content; }
+.compact-settings-help p { padding:8px 0; font-size:12px; line-height:1.7; }
+.compact-exception-board .compact-period-panel { display:block; padding:0; gap:0; border-radius:9px; overflow:hidden; background:#19334e22; border-left:3px solid var(--line-dark); }
+.compact-period-top { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px 12px; background:#a8ceff09; }
+.compact-period-number { font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.compact-period-name { flex:1; min-width:160px; }
+.compact-period-name input { width:100%; font-weight:600; background:transparent; }
+.compact-period-dates { display:flex; gap:6px; align-items:center; font-size:12px; }
+.compact-period-dates input { width:120px; }
+.compact-row-actions { display:flex; align-items:center; gap:4px; white-space:nowrap; }
+.compact-row-actions button { padding:0 7px; height:27px; }
+.compact-row-actions select { width:65px; height:27px; }
+.compact-exception-board .compact-delete { color:#ffbdc7; }
+.compact-validation { padding:0 12px 8px; font-size:11px; color:#f5d58a; }
+.compact-list-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 12px; border-top:1px solid var(--line); }
+.compact-list-toolbar strong { font-size:12px; }
+.compact-list-toolbar small { margin-left:8px; font-size:11px; color:var(--muted); font-weight:400; }
+.compact-priority-scroll { overflow-x:auto; padding:0 10px 10px; }
+.compact-priority-head,.compact-priority-row { display:grid; grid-template-columns:38px 110px minmax(200px,1fr) 76px 168px; gap:10px; align-items:center; min-width:650px; }
+.compact-priority-head { padding:6px 9px; color:var(--muted); font-size:10px; }
+.compact-priority-row { min-height:39px; padding:4px 8px; border:1px solid transparent; border-left:3px solid transparent; border-bottom:1px solid var(--line); border-radius:4px; font-size:12px; scroll-margin-block:16px; }
+.compact-priority-row:hover { background:#a8ceff0c; }
+.compact-priority-row select { width:100%; }
+.compact-rank { color:var(--muted); font-variant-numeric:tabular-nums; }
+.compact-type { color:var(--muted); font-size:11px; }
+.compact-item-name { min-width:0; }
+.compact-item-name strong { font-size:12px; font-weight:500; }
+.compact-item-name .needs-selection { border-color:#e8c57166; }
+.compact-locked { width:36px; text-align:center; color:var(--muted); font-size:10px; }
+.compact-exception-board .activity-row-new { border-left-color:#7be2bd; background-color:#62dbb20b; }
+.compact-exception-board .activity-row-moved { border-left-color:#85bfff; background-color:#70b6ff0b; }
+.compact-exception-board .activity-row-edited { border-left-color:#ebc777; background-color:#f3bf570b; }
+.compact-priority-row.activity-row-new,.compact-priority-row.activity-row-moved { animation:compact-row-arrive .7s ease-out; }
+@keyframes compact-row-arrive { from { box-shadow:inset 0 0 0 1px #c5e7ff77; background-color:#a8ceff26; } to { box-shadow:inset 0 0 0 1px transparent; } }
+@media(prefers-reduced-motion:reduce) { .compact-priority-row.activity-row-new,.compact-priority-row.activity-row-moved { animation:none; } }
+.periods-page-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; position:relative; }
+.periods-page-toolbar h2 { margin:0; }
+.periods-page-toolbar h2 small { color:var(--muted); font-size:11px; font-weight:400; margin-left:8px; }
+.periods-help { position:relative; font-size:12px; }
+.periods-help summary { cursor:pointer; padding:7px 10px; border:1px solid var(--line); border-radius:5px; list-style:none; }
+.periods-help[open] summary { background:#a8ceff22; }
+.periods-help-content { position:absolute; right:0; top:36px; z-index:20; width:min(430px,70vw); max-height:55vh; overflow:auto; padding:16px; border:1px solid var(--line-dark); border-radius:9px; background:#243b53; box-shadow:0 8px 28px #0006; white-space:normal; }
+.periods-help-content p { font-size:12px; line-height:1.7; margin:8px 0 12px; }
+.period-summary-bar { display:flex; gap:8px; align-items:center; padding:7px 10px; }
+.compact-exception-board button.period-title-toggle { display:flex; align-items:center; gap:10px; flex:1; min-width:0; height:auto; min-height:30px; padding:3px 0; text-align:left; border:0; background:transparent; box-shadow:none; }
+.period-title-toggle strong { font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.period-chevron { color:#b6d8fc; font-size:16px; flex-shrink:0; }
+.period-summary-dates,.period-stage-count { color:var(--muted); font-size:11px; white-space:nowrap; }
+.period-summary-dates { margin-left:auto; }
+.period-incomplete { color:#f5d58a; font-size:10px; white-space:nowrap; }
+.period-expanded-body { border-top:1px solid var(--line); }
+.period-expanded-body[hidden] { display:none; }
+.period-edit-line { display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:10px 12px; background:#a8ceff06; }
+.period-edit-line label { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted); white-space:nowrap; }
+.period-edit-line label.period-name-field { flex:1; min-width:220px; }
+.period-name-field input { flex:1; width:100%; }
+.period-edit-line .flexible-date-input { width:120px; }
+@media(max-width:1000px) { .period-summary-bar { flex-wrap:wrap; } .period-summary-dates { display:none; } .period-title-toggle { min-width:180px; } }

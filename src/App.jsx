@@ -13,6 +13,8 @@ import EpgOutput from "./pages/EpgOutput.jsx";
 import OperationSettings from "./pages/OperationSettings.jsx";
 import TimeBlockInput, { createInitialTimeBlockGrid, timeBlockHeaders } from "./pages/TimeBlockInput.jsx";
 import WorkMemo from "./pages/WorkMemo.jsx";
+import WorkspaceBoard from "./pages/WorkspaceBoard.jsx";
+import { buildMaterialNames } from "./lib/scheduleView.js";
 
 const navItems = [
   {
@@ -35,6 +37,7 @@ const navItems = [
     number: "2.",
     label: "운영설정",
     children: [
+      { id:"settings-exceptions",label:"예외설정" },
       {
         id: "settings-promotion",
         label: "프로모션",
@@ -71,6 +74,7 @@ const navItems = [
     id: "work-memo",
     number: "9.",
     label: "메모",
+    children: [{id:"broadcast-qa",label:"송출 Q&A"}],
   },
 ];
 
@@ -82,7 +86,9 @@ export default function App() {
   const [bulkEdits, setBulkEdits] = useState({overrides:{},extraRows:[]});
   useRtdbValue("bulkRegistration/edits",bulkEdits,setBulkEdits);
   const bulkRecords=buildBulk(timeBlockHeaderValues,timeBlockGrid,settings,bulkEdits);
-  const masterRows=buildMaster(bulkRecords,settings);
+  const masterEntries=buildMaster(bulkRecords,settings,{structured:true});
+  const masterRows=masterEntries.map(entry=>entry.values);
+  const materialNames=buildMaterialNames(timeBlockHeaderValues,timeBlockGrid,settings);
   const updateBulkRows = update => {
     const previous=bulkRecords.map(record=>record.values);
     const next=typeof update === "function" ? update(previous) : update;
@@ -113,14 +119,15 @@ export default function App() {
     if (activePage === "dawon-output") {
       return <DawonScheduleOutput headers={timeBlockHeaderValues} rows={timeBlockGrid} />;
     }
-    if (activePage === "operation-settings") return <OperationSettings sectionId="operation-settings" />;
-    if (activePage.startsWith("settings-")) return <OperationSettings sectionId={activePage} />;
-    if (activePage === "schedule-master") return <MasterSchedule rows={masterRows} error={settingsError} />;
+    if (activePage === "operation-settings") return <OperationSettings sectionId="operation-settings" onNavigate={setActivePage} />;
+    if (activePage.startsWith("settings-")) return <OperationSettings sectionId={activePage} onNavigate={setActivePage} />;
+    if (activePage === "schedule-master") return <MasterSchedule rows={masterRows} entries={masterEntries} materialNames={materialNames} sourceSnapshot={{timeBlock:{headers:timeBlockHeaderValues,rows:timeBlockGrid},settings,bulkEdits}} error={settingsError} />;
     if (activePage === "schedule-ads") return <AdvertisementSettings />;
     if (["schedule-write", "schedule-bulk"].includes(activePage)) {
-      return <BulkRegistration rows={bulkRecords.map(record=>record.values)} setRows={updateBulkRows} reset={() => setBulkEdits({overrides:{},extraRows:[]})} error={settingsError} />;
+      return <BulkRegistration rows={bulkRecords.map(record=>record.values)} materialNames={materialNames} setRows={updateBulkRows} reset={() => setBulkEdits({overrides:{},extraRows:[]})} error={settingsError} />;
     }
     if (activePage === "work-memo") return <WorkMemo />;
+    if (activePage === "broadcast-qa") return <WorkspaceBoard key="broadcastQa" collection="broadcastQa" />;
     return (
       <TimeBlockInput
         headerValues={timeBlockHeaderValues}

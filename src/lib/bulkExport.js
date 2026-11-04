@@ -4,9 +4,7 @@ export function outputRows(rows, selectedChannels = null) {
   return rows.filter(row=>row.some(value=>String(value??"").trim()) && (selectedChannels === null || selectedChannels.includes(channelValue(row))));
 }
 export function exportValues(rows) {
-  // The source has four floating-banner fields. No fifth banner is invented
-  // from the notes column; the template's fifth slot stays empty.
-  return rows.map(row=>[1,2,3,20,21,22,23,null].map(col=>col === null ? "" : String(row[col] ?? "")));
+  return rows.map(row=>[1,2,3,20,21,22,23,24].map(col=>String(row[col] ?? "")));
 }
 
 const u16 = (data, offset) => new DataView(data.buffer,data.byteOffset,data.byteLength).getUint16(offset,true);
@@ -57,10 +55,23 @@ export async function createBulkXls(template, rows) {
       if(row===1 && col<8)xfFor[col]=xf;
     }
   });
-  const textXf=xfs.findIndex(r=>u16(r.payload,2)===49); // Built-in @ text format.
-  if(textXf<0)throw new Error("양식에 텍스트 셀 서식이 없습니다.");
+  // Missing cells (notably H2) must inherit a DATA style, not the first @ XF,
+  // which may be the blue header style. Clone formats when necessary so every
+  // exported value stays text without losing body borders/alignment/fill.
+  const bodyXf=xfFor[3] ?? xfFor[0];
+  if(bodyXf===null)throw new Error("양식에 본문 셀 서식이 없습니다.");
+  const extraXfs=[],textStyles=new Map();
+  const textStyle = col => {
+    const original=xfFor[col] ?? bodyXf;
+    if(u16(xfs[original].payload,2)===49)return original;
+    if(textStyles.has(original))return textStyles.get(original);
+    const payload=xfs[original].payload.slice();put16(payload,2,49);
+    const index=xfs.length+extraXfs.length;
+    extraXfs.push(record(0x00e0,payload));textStyles.set(original,index);
+    return index;
+  };
   const body=exportValues(rows).flatMap((values,index)=>values.map((value,col)=>{
-    const xf=xfFor[col]!==null && u16(xfs[xfFor[col]].payload,2)===49 ? xfFor[col] : textXf;
+    const xf=textStyle(col);
     return textCell(index+1,col,xf,value);
   }));
   const rowStyle=sheet.find(r=>r.type===0x0208 && u16(r.payload,0)===1)?.payload;
@@ -70,7 +81,9 @@ export async function createBulkXls(template, rows) {
     put16(payload,0,row);put16(payload,2,0);put16(payload,4,8);
     return record(0x0208,payload);
   });
-  const drop=new Set([0x0208,0x00fd,0x0204,0x0201,0x0203,0x027e,0x00bd,0x00be,0x0006,0x0207,0x0205,0x020b,0x00d7,0x003c]);
+  // CONTINUE can belong to retained printer settings (PLS), not just cell data.
+  // Removing it truncates the template's printer data and Excel reports damage.
+  const drop=new Set([0x0208,0x00fd,0x0204,0x0201,0x0203,0x027e,0x00bd,0x00be,0x0006,0x0207,0x0205,0x020b,0x00d7]);
   const outputSheet=[];
   sheet.forEach(r=>{
     if(drop.has(r.type))return;
@@ -87,7 +100,10 @@ export async function createBulkXls(template, rows) {
     if(r.type===0x00ff)return; // EXTSST offsets are optional and would be stale.
     if(r.type===0x0085) { if(keptSheet)return;keptSheet=true;bound=r.bytes.slice();outputGlobals.push(bound); }
     else if(r.type===0x003d) { const b=r.bytes.slice();put16(b,14,0);put16(b,16,0);outputGlobals.push(b); }
-    else outputGlobals.push(r.bytes);
+    else {
+      if(r.type===0x000a)outputGlobals.push(...extraXfs);
+      outputGlobals.push(r.bytes);
+    }
   });
   put32(bound,4,outputGlobals.reduce((sum,r)=>sum+r.length,0));
   const workbook=join([...outputGlobals,...outputSheet]);

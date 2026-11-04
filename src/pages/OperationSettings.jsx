@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import CoachTour from "../components/CoachTour.jsx";
 import EventCardMonth from "../components/EventCardMonth.jsx";
+import ExceptionSettings, { toPeriodGroups } from "../components/ExceptionSettings.jsx";
+import { exceptionStages } from "../lib/priorityExceptions.js";
 import SimpleSettingsTable from "../components/SimpleSettingsTable.jsx";
 import useRtdbValue from "../hooks/useRtdbValue.js";
 
@@ -83,7 +85,7 @@ const defaultMaterialColumns = [
 ];
 
 const disabledMdColumns = [{ key: "mdCategory", label: "MD분류" }];
-const excludedKeywordColumns = [{ key: "keyword", label: "상품명 포함 키워드" }];
+const excludedKeywordColumns = [{ key: "keyword", label: "상품명·편성코드명 포함 키워드" }];
 
 const defaultDisabledMdCategories = [
   "정보방송",
@@ -193,6 +195,9 @@ const defaultBannerScheduleRows = [
 ];
 
 const sections = {
+  "settings-exceptions": {
+    title:"예외설정",description:"기간별로 0단계부터 예외 적용 순서를 직접 관리합니다.",
+  },
   "operation-settings": {
     title: "운영설정",
     description: "출력물 생성에 필요한 공통 설정을 관리합니다.",
@@ -229,7 +234,7 @@ const sections = {
   },
 };
 
-export default function OperationSettings({ sectionId }) {
+export default function OperationSettings({ sectionId, onNavigate }) {
   const [promotionRows, setPromotionRows] = useState(() => [createPromotionRow()]);
   const [plannedPgmRows, setPlannedPgmRows] = useState(() => [createPlannedPgmRow()]);
   const [selectedPromotionIndex, setSelectedPromotionIndex] = useState(0);
@@ -241,6 +246,8 @@ export default function OperationSettings({ sectionId }) {
   const [disabledMdRows, setDisabledMdRows] = useState(() => createDisabledMdRows());
   const [excludedKeywordRows, setExcludedKeywordRows] = useState([]);
   const [priorityOrder, setPriorityOrder] = useState(() => priorityItems.map((item) => item.id));
+  const [priorityExceptions,setPriorityExceptions] = useState([]);
+  const [exceptionPriority,setExceptionPriority] = useState(null);
   const [draggingPriorityId, setDraggingPriorityId] = useState(null);
   useRtdbValue("settings/promotion", promotionRows, setPromotionRows);
   useRtdbValue("settings/plannedPgm", plannedPgmRows, setPlannedPgmRows);
@@ -252,6 +259,8 @@ export default function OperationSettings({ sectionId }) {
   useRtdbValue("settings/disabledMdCategories", disabledMdRows, setDisabledMdRows);
   useRtdbValue("settings/cardExcludedKeywords", excludedKeywordRows, setExcludedKeywordRows);
   useRtdbValue("settings/priorityOrder", priorityOrder, setPriorityOrder);
+  useRtdbValue("settings/priorityExceptions",priorityExceptions,setPriorityExceptions);
+  useRtdbValue("settings/exceptionPriority",exceptionPriority,setExceptionPriority);
 
   useEffect(() => {
     const normalizedRows = normalizeDefaultMaterialRows(defaultMaterialRows);
@@ -547,6 +556,15 @@ export default function OperationSettings({ sectionId }) {
   };
 
   const renderContent = () => {
+    if(sectionId === "settings-exceptions") {
+      const legacyStages=exceptionStages({exceptionPriority,priorityExceptions});
+      const groups=toPeriodGroups(exceptionPriority,legacyStages,normalizedPriorityOrder);
+      const setGroups=update=>setExceptionPriority(current=>{
+        const previous=toPeriodGroups(current,exceptionStages({exceptionPriority:current,priorityExceptions}),normalizedPriorityOrder);
+        return {schemaVersion:5,groups:typeof update === "function" ? update(previous) : update};
+      });
+      return <ExceptionSettings groups={groups} setGroups={setGroups} promotions={promotionRows} plannedPgms={plannedPgmRows} baseOrder={normalizedPriorityOrder} isLegacy={exceptionPriority?.schemaVersion!==5} />;
+    }
     if (sectionId === "operation-settings") {
       return (
         <section className="priority-board" data-coach="operation-settings-panel">
@@ -558,15 +576,16 @@ export default function OperationSettings({ sectionId }) {
             <article className="priority-card priority-card-fixed" data-priority-id="cardExclusion">
               <span>1</span>
               <strong>카드배너 미적용 처리</strong>
-              <em>미운영 MD분류 · 상품명 제외 키워드 · PGM배너 제외 여부 확인. 다른 설정과 관계없이 카드배너(배너1)를 제외합니다.</em>
+              <em>미운영 MD분류 · 상품명 또는 편성코드명의 제외 키워드에 해당하면 카드배너(배너1)를 제외합니다. 단, 0번 예외설정에서 1번보다 우선으로 지정한 항목은 우선 적용됩니다.</em>
             </article>
             {priorityCards.map((item, index) => (
               <article
                 className={`priority-card ${draggingPriorityId === item.id ? "dragging" : ""}`}
                 data-priority-id={item.id}
-                draggable
+                draggable={![4,5].includes(exceptionPriority?.schemaVersion)}
                 key={item.id}
                 onDragStart={(event) => {
+                  if([4,5].includes(exceptionPriority?.schemaVersion))return;
                   setDraggingPriorityId(item.id);
                   event.dataTransfer.effectAllowed = "move";
                   event.dataTransfer.setData("text/plain", item.id);
@@ -588,10 +607,13 @@ export default function OperationSettings({ sectionId }) {
             ))}
           </div>
           <div className="priority-note">
-            <p>* 1번은 고정입니다. 카드배너 제외 대상에는 프로모션·특수요청이 있어도 배너1을 넣지 않습니다.</p>
+            <p>* 1번의 기본 위치는 고정입니다. 0번 예외설정에서 ‘1번보다 우선’으로 지정한 항목은 해당 기간 동안 제외 규칙보다 우선합니다.</p>
             <p>* 특수요청은 전체정보, 외에는 입력소재 부분만 적용됩니다.</p>
             <p>ex. 특수요청 소재1~4 전체 공란일시, 전체 배너 미설정</p>
           </div>
+          <section className="exception-settings-panel">
+            <article className="priority-card priority-card-fixed"><span>0</span><strong>예외설정</strong><em>기간별로 0단계부터 순서를 설정합니다. 적용 대상이 아닌 방송은 기본설정을 따릅니다.</em><button type="button" onClick={()=>onNavigate?.("settings-exceptions")}>예외설정 화면 열기</button></article>
+          </section>
           <section className="default-settings-panel">
             <header>
               <strong>기본셋팅</strong>
@@ -632,8 +654,8 @@ export default function OperationSettings({ sectionId }) {
                 />
               </section>
               <section>
-                <h2>상품명 키워드 제외</h2>
-                <p className="card-keyword-help">상품명에 키워드가 포함되면 다른 설정과 관계없이 카드배너(배너1)를 제외합니다.</p>
+                <h2>상품명·편성코드명 키워드 제외</h2>
+                <p className="card-keyword-help">상품명 또는 편성코드명 중 하나라도 등록한 키워드가 포함되면 카드배너(배너1)를 제외합니다(OR 조건). 예: 상품명에 ‘스케쳐스’가 없어도 편성코드명에 ‘스케쳐스’가 있으면 제외합니다. 여러 키워드 중 하나만 일치해도 적용됩니다. 단, 0번 예외설정에서 ‘1번보다 우선’으로 지정한 항목은 해당 기간에 우선 적용됩니다.</p>
                 <SimpleSettingsTable
                   columns={excludedKeywordColumns}
                   rows={excludedKeywordRows}

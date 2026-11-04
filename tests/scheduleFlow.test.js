@@ -10,6 +10,25 @@ const settings={
   promotion:[{startDate:"2026-11-01",endDate:"2026-11-05",programNames:[{value:"상품A"}],material2:"PROMO-CI"}],
   plannedPgm:[{plannedPgmName:"기획A",startDate:"2026-11-01",endDate:"2026-11-05",material2:"PLANNED-CI",material3:"L"}],
 };
+test("PGM배너여부 N does not suppress the independently scheduled event-card banner",()=>{
+  const sourceHeaders=[...headers,"PGM배너여부"];
+  const records=buildBulk(sourceHeaders,[[...row,"N"]],settings);
+  assert.equal(records[0].values[11],"");
+  assert.equal(records[0].values[20],"CARD");
+  assert.equal(records[0].values[21],"PROMO-CI");
+  const mdExcluded=buildBulk(sourceHeaders,[[...row,"N"]],{...settings,disabledMdCategories:[{mdCategory:"뷰티"}]});
+  assert.equal(mdExcluded[0].values[11],"O");
+  assert.equal(mdExcluded[0].values[20],"");
+  const keywordExcluded=buildBulk([...sourceHeaders,"상품명"],[[...row,"N","스케쳐스 신발"]],{...settings,cardExcludedKeywords:[{keyword:"스케쳐스"}]});
+  assert.equal(keywordExcluded[0].values[11],"O");
+  assert.equal(keywordExcluded[0].values[20],"");
+});
+test("source exclusion-looking columns do not create rules outside operation settings",()=>{
+  const sourceHeaders=[...headers,"PGM배너여부","카드배너제외여부","카드제외 여부"];
+  const result=buildBulk(sourceHeaders,[[...row,"N","Y","O"]],settings)[0];
+  assert.equal(result.values[11],"");
+  assert.equal(result.values[20],"CARD");
+});
 test("maps source fields, preserves unknown blanks and applies priority per slot",()=>{
   const bulk=buildBulk(headers,[row],settings);
   assert.equal(bulk[0].values[5],"뷰티팀");
@@ -86,6 +105,20 @@ test("product keyword exclusions beat promotions, special requests and manual ba
   assert.equal(buildBulk(h,[[...row,"다른 상품"]],config)[0].values[20],"SPECIAL-CARD");
   const mixed={...settings,cardExcludedKeywords:[{keyword:"skeCHers"}]};
   assert.equal(buildBulk(h,[[...row,"SKECHERS shoes"]],mixed)[0].values[20],"");
+});
+test("card keyword exclusion matches product OR schedule name independently",()=>{
+  const h=[...headers,"상품명"];
+  const config={...settings,cardExcludedKeywords:[{keyword:"스케쳐스"},{keyword:"로보락"}]};
+  const run=(scheduleName,productName)=>{
+    const source=[...row,productName];source[headers.indexOf("편성코드명")]=scheduleName;
+    return buildBulk(h,[source],config)[0].values;
+  };
+  for(const [scheduleName,productName] of [["스케쳐스 방송","브랜드 없는 신발"],["일반 방송","스케쳐스 신발"],["스케쳐스 방송","스케쳐스 신발"],["로보락 방송","청소기"],["스케쳐스 방송",""]]){
+    const result=run(scheduleName,productName);
+    assert.equal(result[11],"O");assert.equal(result[20],"");assert.equal(result[21],"PLANNED-CI");
+  }
+  const result=run("일반 방송","일반 상품");
+  assert.equal(result[11],"");assert.equal(result[20],"CARD");
 });
 test("MD card exclusion remains above promotion and special-request priority",()=>{
   const config={...settings,disabledMdCategories:[{mdCategory:"뷰티"}],specialRequests:[{pgmDateTime:"2026-11-03 01:31",programName:"상품A",material1:"CARD",material2:"CI"}]};
