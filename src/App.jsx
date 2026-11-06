@@ -3,6 +3,7 @@ import useScheduleSettings from "./hooks/useScheduleSettings.js";
 import useRtdbValue from "./hooks/useRtdbValue.js";
 import { buildBulk, buildMaster } from "./lib/scheduleFlow.js";
 import Sidebar from "./components/Sidebar.jsx";
+import MaterialConflicts from "./pages/MaterialConflicts.jsx";
 import MasterSchedule from "./pages/MasterSchedule.jsx";
 import AdvertisementSettings from "./pages/AdvertisementSettings.jsx";
 import BulkRegistration from "./pages/BulkRegistration.jsx";
@@ -63,6 +64,12 @@ const navItems = [
     ],
   },
   {
+    id: "material-conflicts",
+    label: "소재 충돌 오류 예측",
+    standalone: true,
+    tone: "danger",
+  },
+  {
     id: "schedule-write",
     number: "3.",
     label: "운행표 생성",
@@ -118,6 +125,7 @@ export default function App() {
   });
 
   const renderPage = () => {
+    if (activePage === "material-conflicts") return <MaterialConflicts settings={settings} error={settingsError} onNavigate={setActivePage} />;
     if (activePage === "epg-output") return <EpgOutput headers={timeBlockHeaderValues} rows={timeBlockGrid} />;
     if (activePage === "dawon-output") {
       return <DawonScheduleOutput headers={timeBlockHeaderValues} rows={timeBlockGrid} />;

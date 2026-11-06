@@ -6,6 +6,12 @@ import { exceptionStages } from "../lib/priorityExceptions.js";
 import SimpleSettingsTable from "../components/SimpleSettingsTable.jsx";
 import useRtdbValue from "../hooks/useRtdbValue.js";
 
+const benefitColumns = [
+  { key: "shoppingSubsidy", label: "쇼핑지원금", width: "110px" },
+  { key: "rewardPoints", label: "적립금", width: "100px" },
+  { key: "cardBillingDiscount", label: "카드청구할인", width: "120px" },
+  { key: "otherBenefits", label: "기타", width: "110px" },
+];
 const promotionColumns = [
   { key: "promotionName", label: "프로모션명" },
   { key: "startDate", label: "시작일", type: "date" },
@@ -15,6 +21,7 @@ const promotionColumns = [
   { key: "material3", label: "L바(배너3)", type: "select", coachId: "promotion-material-3" },
   { key: "material4", label: "특이 배너(배너4)", coachId: "promotion-material-4" },
   { key: "note", label: "비고(플로팅배너5)" },
+  ...benefitColumns,
 ];
 
 const plannedPgmColumns = [
@@ -25,7 +32,8 @@ const plannedPgmColumns = [
   { key: "material2", label: "우상단CI(배너2)", type: "select" },
   { key: "material3", label: "L바(배너3)", type: "select" },
   { key: "material4", label: "특이 배너(배너4)", type: "select" },
-  { key: "note", label: "비고" },
+  { key: "note", label: "비고(플로팅배너5)" },
+  ...benefitColumns,
 ];
 
 const specialRequestColumns = [
@@ -863,6 +871,10 @@ function createPromotionRow() {
   return {
     id: crypto.randomUUID?.() ?? `promotion-${Date.now()}-${Math.random()}`,
     promotionName: "",
+    shoppingSubsidy: "",
+    rewardPoints: "",
+    cardBillingDiscount: "",
+    otherBenefits: "",
     startDate: "",
     endDate: "",
     material1: "",
@@ -878,6 +890,10 @@ function createPlannedPgmRow() {
   return {
     id: crypto.randomUUID?.() ?? `planned-pgm-${Date.now()}-${Math.random()}`,
     plannedPgmName: "",
+    shoppingSubsidy: "",
+    rewardPoints: "",
+    cardBillingDiscount: "",
+    otherBenefits: "",
     startDate: "",
     endDate: "",
     material1: "",

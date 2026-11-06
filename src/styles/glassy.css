@@ -217,3 +217,9 @@ option { background: #263c55; color: #f6faff; }
   .page { border-radius: 14px; }
   .topbar { flex-wrap: wrap; gap: 12px; padding: 14px; }
 }
+.promotion-page-layout .settings-table-wrap { overflow-x:auto; }
+.promotion-page-layout .settings-table { min-width:1680px; }
+.promotion-page-layout .settings-table th:first-child { width:160px; }
+.promotion-page-layout .settings-table th:nth-child(2),
+.promotion-page-layout .settings-table th:nth-child(3) { width:130px; }
+.promotion-page-layout .settings-table th:nth-child(8) { width:170px; }

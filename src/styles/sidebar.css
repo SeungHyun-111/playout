@@ -25,6 +25,12 @@
 .is-collapsed .morph-section-line { transform: translateX(-188px); }
 .morph-nav-item { position: relative; display: flex; align-items: center; width: 100%; height: 40px; gap: 8px; padding: 0 4px; border: 0; background: transparent; border-radius: 10px; text-align: left; color: #dae6f5; white-space: nowrap; }
 .morph-nav-item:hover { color: #fff; background: #d9eaff12; }
+.morph-nav-standalone { position: relative; margin: 12px 0 4px; }
+.morph-nav-item.is-danger { background: linear-gradient(120deg, #a34e5bd9, #763d50c9); color: #fff0f1; box-shadow: inset 0 1px 0 #ffd4d833, 0 4px 14px #38182326; font-size: 13px; }
+.morph-nav-item.is-danger .morph-nav-icon { color: #ffd0d5; }
+.morph-nav-item.is-danger:hover { background: linear-gradient(120deg, #b05a67eb, #89475bdf); color: #fff; }
+.morph-nav-item.is-danger[aria-current="page"] { color: #fff; box-shadow: inset 0 0 0 1px #ffd4d877, 0 4px 14px #38182326; }
+.morph-nav-item.is-danger[aria-current="page"] .morph-nav-icon { color: #ffe0e4; }
 .morph-nav-icon { flex: 0 0 38px; width: 38px; height: 38px; display: grid; place-items: center; }
 .morph-nav-item.is-child { font-size: 12px; }
 .morph-nav-item.is-child .morph-nav-icon { color: #adc9e7; }

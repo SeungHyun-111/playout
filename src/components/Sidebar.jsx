@@ -18,6 +18,7 @@ const paths = {
   "schedule-master": "M3 4h18v14H3z M8 22h8 M12 18v4 M7 9h10 M7 13h6",
   "schedule-ads": "M3 10l17-6v16L3 14z M6 15l2 6h4l-2-5",
   "work-memo": "M5 3h14v18H5z M9 8h6 M9 12h6 M9 16h4",
+  "material-conflicts": "M12 3 2 21h20L12 3z M12 9v5 M12 17h.01",
   "broadcast-qa": "M4 4h16v13H9l-5 4z M9 8a3 3 0 0 1 6 0c0 2-3 2-3 4 M12 14h.01",
 };
 function Icon({ id }) {
@@ -46,7 +47,11 @@ export default function Sidebar({ items, activePage, onNavigate }) {
   useLayoutEffect(() => {
     const update = () => {
       const active = navRef.current?.querySelector('[aria-current="page"]');
-      if (active) setIndicator({ top: active.offsetTop, height: active.offsetHeight });
+      if (active && navRef.current) {
+        const nav = navRef.current;
+        const bounds = active.getBoundingClientRect();
+        setIndicator({ top: bounds.top - nav.getBoundingClientRect().top + nav.scrollTop, height: bounds.height });
+      }
     };
     update();
     const observer = new ResizeObserver(update);
@@ -64,7 +69,7 @@ export default function Sidebar({ items, activePage, onNavigate }) {
   };
 
   const renderItem = (item, index, child = false) => <button
-    key={item.id} type="button" className={`morph-nav-item ${child ? "is-child" : ""}`}
+    key={item.id} type="button" className={`morph-nav-item ${child ? "is-child" : ""} ${item.tone === "danger" ? "is-danger" : ""}`}
     aria-label={item.label} aria-current={activePage === item.id ? "page" : undefined}
     aria-describedby={tooltip?.id===item.id ? tooltipId : undefined}
     onMouseEnter={event=>showTooltip(event,item)} onMouseLeave={()=>setTooltip(null)}
@@ -85,7 +90,7 @@ export default function Sidebar({ items, activePage, onNavigate }) {
     </button>
     <nav id="playout-navigation" className="morph-nav" ref={navRef}>
       {indicator && <span className="morph-active-indicator" aria-hidden="true" style={{ height: indicator.height, transform: `translateY(${indicator.top}px)` }} />}
-      {items.map((item, index) => <div className="morph-nav-group" key={item.id}>
+      {items.map((item, index) => item.standalone ? <div className="morph-nav-standalone" key={item.id}>{renderItem(item, index * 3)}</div> : <div className="morph-nav-group" key={item.id}>
         <div className="morph-section"><span className="morph-label">{item.number} {index === 0 ? "편성 입력 · 출력" : item.label}</span><span className="morph-section-line" /></div>
         {item.id !== "schedule-write" && renderItem(item, index * 3)}
         {item.children?.map((child, childIndex) => renderItem(child, index * 3 + childIndex + 1, true))}
