@@ -1,8 +1,12 @@
 import {useMemo,useState} from 'react';
 import {analyzeMaterials,dayNumber} from '../lib/materialConflicts.js';
 import {benefitFields,conflictTableColumns,materialNames,tableMaterial,sortConflictRows,createConflictWorkbook} from '../lib/conflictTable.js';
-export default function ConflictMaterialTable({rows,periodGroups,period,socket,settings,onNavigate}) {
-  const [mode,setMode]=useState('period'),[showNames,setShowNames]=useState(false),[sort,setSort]=useState({key:'type',direction:'desc'}),[exporting,setExporting]=useState(false),[error,setError]=useState('');
+export default function ConflictMaterialTable({rows,periodGroups,period,socket,settings,onNavigate,tableState,onTableStateChange}) {
+  const {mode,showNames,sort}=tableState;
+  const setMode=value=>onTableStateChange(previous=>({...previous,mode:value}));
+  const setShowNames=value=>onTableStateChange(previous=>({...previous,showNames:value}));
+  const setSort=value=>onTableStateChange(previous=>({...previous,sort:typeof value==='function'?value(previous.sort):value}));
+  const [exporting,setExporting]=useState(false),[error,setError]=useState('');
   const names=useMemo(()=>materialNames(settings),[settings]);
   const allRows=useMemo(()=>analyzeMaterials(rows,period.start,period.end,socket).rows,[rows,period,socket]);
   const sortedRows=useMemo(()=>sortConflictRows(allRows,sort,names,showNames),[allRows,sort,names,showNames]);

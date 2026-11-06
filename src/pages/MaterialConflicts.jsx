@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import useMaterialConflictSession from "../hooks/useMaterialConflictSession.js";
 import ConflictMaterialTable from "../components/ConflictMaterialTable.jsx";
 import { analyzeMaterials, buildConflictDisplayGroups, normalizeMaterials, groupMaterialPeriods, validDate, dayNumber, dateFromDay } from "../lib/materialConflicts.js";
 import "../styles/material-conflicts.css";
@@ -28,20 +29,20 @@ function Symbol({kind="layers"}) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[kind] || paths.layers}/></svg>;
 }
 export default function MaterialConflicts({settings,error,onNavigate}) {
-  const [period,setPeriod]=useState(()=>{const now=new Date().toLocaleDateString("en-CA",{timeZone:"Asia/Seoul"}); const month=now.slice(0,7); const last=new Date(Number(month.slice(0,4)),Number(month.slice(5)),0).getDate();return {start:`${month}-01`,end:`${month}-${last}`};});
-  const [socket,setSocket]=useState(0), [selected,setSelected]=useState(null);
-  const [selectedCell,setSelectedCell]=useState(null);
-  const [detailsOpen,setDetailsOpen]=useState(true);
+  const cloud=useMaterialConflictSession(settings);
+  const {period,socket,detailsOpen,selectedBar:selectedCell}=cloud.ui;
+  const setPeriod=value=>cloud.setUi('period',value);
+  const setSocket=value=>cloud.setUi('socket',value);
+  const setDetailsOpen=value=>cloud.setUi('detailsOpen',value);
+  const setSelectedCell=value=>cloud.setUi('selectedBar',value);
+  const [selected,setSelected]=useState(null);
   const [hoverCell,setHoverCell]=useState(null);
   const [statusTooltip,setStatusTooltip]=useState(null);
   const tooltipCloseTimer=useRef(null);
   const keepTooltip=()=>clearTimeout(tooltipCloseTimer.current);
   const closeTooltip=()=>{keepTooltip();tooltipCloseTimer.current=setTimeout(()=>{setHoverCell(null);setStatusTooltip(null);},240);};
   useEffect(()=>()=>clearTimeout(tooltipCloseTimer.current),[]);
-  const [outputChoices,setOutputChoices]=useState(()=>{
-    try {const saved=JSON.parse(sessionStorage.getItem("playout.materialConflicts.outputChoices")||"{}");return saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{};}catch{return {};}
-  });
-  useEffect(()=>{try{sessionStorage.setItem("playout.materialConflicts.outputChoices",JSON.stringify(outputChoices));}catch{/* Session storage may be disabled. */}},[outputChoices]);
+  const outputChoices=cloud.choices,setOutputChoices=cloud.setChoices;
   const rows=useMemo(()=>normalizeMaterials(settings),[settings]);
   const analysis=useMemo(()=>{
     const result=analyzeMaterials(rows,period.start,period.end,socket);
@@ -56,9 +57,11 @@ export default function MaterialConflicts({settings,error,onNavigate}) {
   const issues=conflictGroups.filter(group=>!selectedCell||group.id===selectedCell.issueId);
   const invalidRows=rows.filter(row=>row.invalid);
 
+  if(cloud.loading)return <div className="mc-page"><p className="mc-notice">RTDB 작업 세션을 불러오는 중입니다.</p></div>;
   return <div className="mc-page">
     {hoverCell&&<FloatingTooltip onMouseEnter={keepTooltip} onMouseLeave={closeTooltip} x={hoverCell.x} y={hoverCell.y}><strong>{short(hoverCell.start)} ~ {short(hoverCell.end)} · 배너{hoverCell.slot}</strong><span>소재 충돌 {hoverCell.count}건 · 클릭하여 상세 확인</span>{hoverCell.active.slice(0,5).map(row=><div key={row.id}>{row.name}<code>{row.materials[hoverCell.slot-1]}</code></div>)}</FloatingTooltip>}
     {statusTooltip&&<FloatingTooltip onMouseEnter={keepTooltip} onMouseLeave={closeTooltip} id="mc-status-tooltip" className="mc-status-tooltip" x={statusTooltip.x} y={statusTooltip.y} above={statusTooltip.above}><strong>{statusTooltip.name} · 충돌 조합 {statusTooltip.details.length}건</strong><p>같은 기간·소켓에서 같은 소재코드를 &로 묶은 뒤, 서로 다른 소재의 충돌 조합을 셉니다. 이 행이 포함된 조합만 표시하며 행별 건수를 합하면 중복 집계됩니다.</p><div className="mc-status-items">{statusTooltip.details.map(pair=><section key={pair.id}><small>배너{pair.slot} · {short(pair.start)} ~ {short(pair.end)}</small><div>{pair.items.map(item=><span key={item.code}>{item.name}<code>{item.code}</code></span>).reduce((all,item,index)=>index?[...all,<b key={`vs-${index}`}>⚔️</b>,item]:[item],[])}</div></section>)}</div></FloatingTooltip>}
+    <div className="mc-cloud-status" role="status">{cloud.error||(!cloud.connected?"RTDB 연결 대기 · 연결되면 동기화합니다.":cloud.saving?"RTDB 저장 중…":"RTDB 저장됨 · 공유 작업 세션")}</div>
     <header className="mc-header"><span className="mc-logo"><Symbol/></span><h1>배너 소재 충돌 예측</h1><span className="mc-subtitle">프로모션 + 기획PGM 통합 검증</span></header>
     <section className="mc-toolbar mc-panel" aria-label="분석 조건">
       <strong>분석 기간</strong><div className="mc-dates"><input aria-label="분석 시작일" type="date" value={period.start} onChange={e=>{setPeriod({...period,start:e.target.value});setSelected(null);setSelectedCell(null);}}/><span>~</span><input aria-label="분석 종료일" type="date" value={period.end} onChange={e=>{setPeriod({...period,end:e.target.value});setSelected(null);setSelectedCell(null);}}/></div>
@@ -101,7 +104,7 @@ export default function MaterialConflicts({settings,error,onNavigate}) {
       <p className="mc-detail-note">같은 소켓·소재 조합은 실제 충돌 기간에 한 번만 표시합니다. 건수는 소켓별 고유 소재 조합 기준입니다.</p>
       </div>
     </aside></div>
-    <ConflictMaterialTable rows={rows} periodGroups={periodGroups} period={period} socket={socket} settings={settings} onNavigate={onNavigate}/>
+    <ConflictMaterialTable rows={rows} periodGroups={periodGroups} period={period} socket={socket} settings={settings} onNavigate={onNavigate} tableState={cloud.ui.table} onTableStateChange={value=>cloud.setUi("table",value)}/>
     <p className="mc-footnote">통합 목록은 시작·종료일 경계로 구간을 나눠 같은 기간에 적용되는 항목을 묶습니다. · 운영 설정 실시간 연동 · 시작일과 종료일 포함 · 우선순위 미적용 · 배너5는 비고에 소재코드(0F…)만 입력된 항목을 분석합니다.</p>
   </div>;
 }
