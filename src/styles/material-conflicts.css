@@ -228,3 +228,7 @@
 .mc-sortable-table th button>span { color:#a7cce7; }.mc-page .mc-material-code.is-material-name { font-family:inherit; font-weight:400; max-width:260px; white-space:normal; line-height:1.5; }
 .mc-pair-material { display:inline-flex; align-items:center; flex-wrap:wrap; gap:6px; }
 .mc-pair-material code { font-size:10px; color:#c7dded; font-weight:400; padding:1px 4px; border-radius:4px; background:#15385255; }
+.mc-page .mc-details-toggle { display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; height:auto; padding:0; border:0; background:transparent; text-align:left; }
+.mc-details-toggle>span { color:#c8deef; font-size:11px; }
+.mc-page .mc-details-toggle:hover { background:transparent; }
+#mc-details-content[hidden] { display:none; }

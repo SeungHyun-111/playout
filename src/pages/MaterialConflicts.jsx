@@ -31,6 +31,7 @@ export default function MaterialConflicts({settings,error,onNavigate}) {
   const [period,setPeriod]=useState(()=>{const now=new Date().toLocaleDateString("en-CA",{timeZone:"Asia/Seoul"}); const month=now.slice(0,7); const last=new Date(Number(month.slice(0,4)),Number(month.slice(5)),0).getDate();return {start:`${month}-01`,end:`${month}-${last}`};});
   const [socket,setSocket]=useState(0), [selected,setSelected]=useState(null);
   const [selectedCell,setSelectedCell]=useState(null);
+  const [detailsOpen,setDetailsOpen]=useState(true);
   const [hoverCell,setHoverCell]=useState(null);
   const [statusTooltip,setStatusTooltip]=useState(null);
   const tooltipCloseTimer=useRef(null);
@@ -77,13 +78,14 @@ export default function MaterialConflicts({settings,error,onNavigate}) {
               const matches=run.materialPairs;
               const active=run.rows;
               const chosen=selectedCell?.slot===slot&&selectedCell.start===run.start&&selectedCell.end===run.end&&selectedCell.issueId===run.issueId;
-              return <button key={run.issueId||run.start} className={`mc-range-bar ${run.tone} ${chosen?"selected":""}`} style={{top:12+lane*42,left:`${run.offset/days*100}%`,"--mc-run-width":`${run.length/days*100}%`}} aria-pressed={chosen} aria-label={`배너${slot} ${run.start} ~ ${run.end} ${matches.length?"중복/충돌":"정상"} ${active.length}개 항목`} onMouseEnter={event=>{keepTooltip();const rect=event.currentTarget.getBoundingClientRect();setHoverCell({...run,slot,count:matches.length,active,x:Math.min(rect.left,window.innerWidth-300),y:Math.min(rect.bottom+10,window.innerHeight-210)});}} onMouseLeave={closeTooltip} onClick={()=>{setHoverCell(null);setSelectedCell(chosen?null:{slot,start:run.start,end:run.end,issueId:run.issueId,rowIds:active.map(row=>row.id)});setSelected(null);}}><span className="mc-bar-summary"><span className="mc-bar-period">{short(run.start)}~{short(run.end)} · </span><span>충돌 {run.materialPairs.length}건</span></span></button>;
+              return <button key={run.issueId||run.start} className={`mc-range-bar ${run.tone} ${chosen?"selected":""}`} style={{top:12+lane*42,left:`${run.offset/days*100}%`,"--mc-run-width":`${run.length/days*100}%`}} aria-pressed={chosen} aria-label={`배너${slot} ${run.start} ~ ${run.end} ${matches.length?"중복/충돌":"정상"} ${active.length}개 항목`} onMouseEnter={event=>{keepTooltip();const rect=event.currentTarget.getBoundingClientRect();setHoverCell({...run,slot,count:matches.length,active,x:Math.min(rect.left,window.innerWidth-300),y:Math.min(rect.bottom+10,window.innerHeight-210)});}} onMouseLeave={closeTooltip} onClick={()=>{setDetailsOpen(true);setHoverCell(null);setSelectedCell(chosen?null:{slot,start:run.start,end:run.end,issueId:run.issueId,rowIds:active.map(row=>row.id)});setSelected(null);}}><span className="mc-bar-summary"><span className="mc-bar-period">{short(run.start)}~{short(run.end)} · </span><span>충돌 {run.materialPairs.length}건</span></span></button>;
             })}</div></div>;
 
           })}
         </div>
       </section>
-    </div><aside className="mc-panel mc-details"><div className="mc-panel-heading"><h2>소재 충돌 상세</h2></div>
+    </div><aside className="mc-panel mc-details"><div className="mc-panel-heading"><button className="mc-details-toggle" type="button" aria-expanded={detailsOpen} aria-controls="mc-details-content" onClick={()=>setDetailsOpen(open=>!open)}><h2>소재 충돌 상세</h2><span>{detailsOpen?'접기 ▴':'펼치기 ▾'}</span></button></div>
+      <div id="mc-details-content" hidden={!detailsOpen}>
       {selectedCell&&<button className="mc-cell-selection" onClick={()=>{setSelectedCell(null);setSelected(null);}}>{short(selectedCell.start)} ~ {short(selectedCell.end)} · 배너{selectedCell.slot} 선택 해제 ×</button>}
       <div className="mc-issue-list">{issues.map(group=><article key={group.id} className={`mc-issue ${selectedCell?.issueId===group.id?"selected":""}`}>
         <button className="mc-group-select" onClick={()=>{setSelectedCell(selectedCell?.issueId===group.id?null:{slot:group.slot,start:group.start,end:group.end,issueId:group.id,rowIds:group.rows.map(row=>row.id)});setSelected(null);}}><span className="mc-badge conflict">소재 충돌</span><b>배너{group.slot}</b><span>{short(group.start)} ~ {short(group.end)}</span><b>{group.rows.length}개 항목</b></button>
@@ -97,6 +99,7 @@ export default function MaterialConflicts({settings,error,onNavigate}) {
         })}</div>
       </article>)}{!issues.length&&<div className="mc-empty">선택한 조건에서 소재 충돌이 발견되지 않았습니다.</div>}</div>
       <p className="mc-detail-note">같은 소켓·소재 조합은 실제 충돌 기간에 한 번만 표시합니다. 건수는 소켓별 고유 소재 조합 기준입니다.</p>
+      </div>
     </aside></div>
     <ConflictMaterialTable rows={rows} periodGroups={periodGroups} period={period} socket={socket} settings={settings} onNavigate={onNavigate}/>
     <p className="mc-footnote">통합 목록은 시작·종료일 경계로 구간을 나눠 같은 기간에 적용되는 항목을 묶습니다. · 운영 설정 실시간 연동 · 시작일과 종료일 포함 · 우선순위 미적용 · 배너5는 비고에 소재코드(0F…)만 입력된 항목을 분석합니다.</p>

@@ -1,6 +1,6 @@
 import { dayNumber } from "./materialConflicts.js";
 export const benefitFields=[['shoppingSubsidy','쇼핑지원금'],['rewardPoints','적립금'],['cardBillingDiscount','카드청구할인'],['otherBenefits','기타']];
-export const conflictTableColumns=[['type','구분'],['name','프로모션 / PGM명'],['period','기간'],...[1,2,3,4,5].map(i=>[`material${i}`,`소재${i}`]),...benefitFields];
+export const conflictTableColumns=[['type','구분'],['name','프로모션 / PGM명'],['start','시작일'],['end','종료일'],...[1,2,3,4,5].map(i=>[`material${i}`,`소재${i}`]),...benefitFields];
 const collator=new Intl.Collator('ko',{numeric:true,sensitivity:'base'});
 export function materialNames(settings) {
   return Object.fromEntries(Object.values(settings.bannerMaterials||{}).filter(Boolean).filter(row=>row.materialId&&row.materialName).map(row=>[String(row.materialId).trim(),String(row.materialName).trim()]));
@@ -9,7 +9,7 @@ export function tableMaterial(code,names,showNames) { return showNames?(names[co
 export function sortConflictRows(rows,sort,names={},showNames=false) {
   const value=(row,key)=>key.startsWith('material')?tableMaterial(row.materials[Number(key.slice(8))-1]||'',names,showNames):row[key]||'';
   return [...rows].sort((a,b)=>{
-    const compared=sort.key==='period'?dayNumber(a.start)-dayNumber(b.start)||dayNumber(a.end)-dayNumber(b.end):collator.compare(value(a,sort.key),value(b,sort.key));
+    const compared=sort.key==='period'?dayNumber(a.start)-dayNumber(b.start)||dayNumber(a.end)-dayNumber(b.end):['start','end'].includes(sort.key)?dayNumber(a[sort.key])-dayNumber(b[sort.key]):collator.compare(value(a,sort.key),value(b,sort.key));
     return compared*(sort.direction==='asc'?1:-1)||collator.compare(a.id,b.id);
   });
 }

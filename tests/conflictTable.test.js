@@ -5,6 +5,10 @@ const rows=[{id:'a',type:'프로모션',name:'항목10',start:'2026-11-10',end:'
 test('sorts dates chronologically and displayed material names independently of IDs',()=>{
   assert.deepEqual(sortConflictRows(rows,{key:'period',direction:'asc'}).map(row=>row.id),['b','a']);
   assert.deepEqual(sortConflictRows(rows,{key:'period',direction:'desc'}).map(row=>row.id),['a','b']);
+  const independent=[{...rows[0],start:'2026-01-01',end:'2026-12-31'},{...rows[1],start:'2026-02-01',end:'2026-03-01'}];
+  assert.deepEqual(sortConflictRows(independent,{key:'start',direction:'asc'}).map(row=>row.id),['a','b']);
+  assert.deepEqual(sortConflictRows(independent,{key:'end',direction:'asc'}).map(row=>row.id),['b','a']);
+  assert.deepEqual(sortConflictRows(independent,{key:'end',direction:'desc'}).map(row=>row.id),['a','b']);
   assert.deepEqual(sortConflictRows(rows,{key:'material1',direction:'asc'}).map(row=>row.id),['b','a']);
   assert.deepEqual(sortConflictRows(rows,{key:'material1',direction:'asc'},{ID10:'가',ID2:'하'},true).map(row=>row.id),['a','b']);
 });
